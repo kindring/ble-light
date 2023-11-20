@@ -496,26 +496,11 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
   print_hex(data, len);
   int i = 0;
   // 第一位为命令字 第二位为 值
-  switch(data[0]){
-    case 0xf0:
-      LOG("breathing light close\n");
-      osal_stop_timerEx(AppWrist_TaskID, 0x66ff);
-      break;
-    case 0xf1:
-      LOG("breathing light open\n");
-      osal_start_reload_timer(AppWrist_TaskID, 0x66ff, 100);
-      break;
-    case 0xf2:
-      LOG("change pwm mode\n");
-      // light_mode_change(data[1]);
-      break;
-    default :
-      // 直接视作灯光控制 转为10进制
-      LOG("light ctrl %d\n", data[0]);
+  // cmdParse();
+  LOG("light ctrl %d\n", data[0]);
+  
+  light_set(0, data[0]);
 
-      //light_ctrl(1, data[0]);
-      break;
-  }
   return ret;
 }
 

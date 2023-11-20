@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>app_wrist</TargetName>
+      <TargetName>wrist</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pArmCC>5060960::V5.06 update 7 (build 960)::.\ARMCC</pArmCC>
@@ -341,7 +341,7 @@
               <MiscControls>-DADV_NCONN_CFG=0x01   -DADV_CONN_CFG=0x02   -DSCAN_CFG=0x04    -DINIT_CFG=0x08   -DBROADCASTER_CFG=0x01 -DOBSERVER_CFG=0x02   -DPERIPHERAL_CFG=0x04   -DCENTRAL_CFG=0x08   -DHOST_CONFIG=0x4</MiscControls>
               <Define>CFG_CP CFG_QFN32 CFG_SLEEP_MODE=PWR_MODE_NO_SLEEP DEBUG_INFO=1 USE_SYS_TICK HUGE_MODE=0</Define>
               <Undefine></Undefine>
-              <IncludePath>.\src;.\components\inc;.\components\common;.\components\osal\include;.\components\ble\include;.\components\ble\hci;.\components\ble\host;.\components\ble\controller\include;.\components\profiles\DevInfo;.\components\profiles\GATT;.\components\profiles\SimpleProfile;.\components\profiles\Roles;.\components\profiles\ota_app;.\components\profiles\hrs;.\components\driver\common;.\components\driver\log;.\components\driver\gpio;.\components\driver\uart;.\components\driver\i2c;.\components\driver\adc;.\components\driver\clock;.\components\driver\pwm;.\components\driver\pwrmgr;.\components\driver\kscan;.\components\driver\flash;.\components\driver\spi;.\components\driver\i2c;.\components\driver\watchdog;.\components\driver\timer;.\components\libraries\console;.\components\libraries\datetime;.\lib;.\src;.\src\ui;.\src\ble;.\src\epticore</IncludePath>
+              <IncludePath>.\src;.\components\inc;.\components\common;.\components\osal\include;.\components\ble\include;.\components\ble\hci;.\components\ble\host;.\components\ble\controller\include;.\components\profiles\DevInfo;.\components\profiles\GATT;.\components\profiles\SimpleProfile;.\components\profiles\Roles;.\components\profiles\ota_app;.\components\profiles\hrs;.\components\driver\common;.\components\driver\log;.\components\driver\gpio;.\components\driver\uart;.\components\driver\i2c;.\components\driver\adc;.\components\driver\clock;.\components\driver\pwm;.\components\driver\pwrmgr;.\components\driver\kscan;.\components\driver\flash;.\components\driver\spi;.\components\driver\i2c;.\components\driver\watchdog;.\components\driver\timer;.\components\libraries\console;.\components\libraries\datetime;.\lib;.\src;.\src\ui;.\src\ble;.\src\pwm_light;.\src\epticore</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -451,9 +451,9 @@
           <GroupName>app</GroupName>
           <Files>
             <File>
-              <FileName>OSAL_app.c</FileName>
+              <FileName>OSAL_wrist.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\OSAL_app.c</FilePath>
+              <FilePath>.\src\OSAL_wrist.c</FilePath>
             </File>
             <File>
               <FileName>app_wrist.c</FileName>
@@ -461,14 +461,24 @@
               <FilePath>.\src\app_wrist.c</FilePath>
             </File>
             <File>
-              <FileName>app_Main.c</FileName>
+              <FileName>wrist_Main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\app_Main.c</FilePath>
+              <FilePath>.\src\wrist_Main.c</FilePath>
+            </File>
+            <File>
+              <FileName>light.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\light.c</FilePath>
             </File>
             <File>
               <FileName>wrist_service.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\ble\wrist_service.c</FilePath>
+            </File>
+            <File>
+              <FileName>pwm_light.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\pwm_light\pwm_light.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -652,13 +662,13 @@
       <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="4.3.0" condition="Cortex-M Device">
         <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
         <targetInfos>
-          <targetInfo name="app_wrist"/>
+          <targetInfo name="wrist"/>
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="Startup" Cvendor="ARM" Cversion="1.0.1" condition="ARMCM0 CMSIS">
         <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
         <targetInfos>
-          <targetInfo name="app_wrist"/>
+          <targetInfo name="wrist"/>
         </targetInfos>
       </component>
     </components>
@@ -668,7 +678,7 @@
         <component Cclass="Device" Cgroup="Startup" Cvendor="ARM" Cversion="1.2.2" condition="ARMCM0 CMSIS"/>
         <package name="CMSIS" schemaVersion="1.7.7" url="http://www.keil.com/pack/" vendor="ARM" version="5.9.0"/>
         <targetInfos>
-          <targetInfo name="app_wrist"/>
+          <targetInfo name="wrist"/>
         </targetInfos>
       </file>
       <file attr="config" category="sourceC" name="Device\ARM\ARMCM0\Source\system_ARMCM0.c" version="1.0.0">
@@ -676,7 +686,7 @@
         <component Cclass="Device" Cgroup="Startup" Cvendor="ARM" Cversion="1.2.2" condition="ARMCM0 CMSIS"/>
         <package name="CMSIS" schemaVersion="1.7.7" url="http://www.keil.com/pack/" vendor="ARM" version="5.9.0"/>
         <targetInfos>
-          <targetInfo name="app_wrist"/>
+          <targetInfo name="wrist"/>
         </targetInfos>
       </file>
       <file attr="config" category="sourceAsm" condition="ARMCC" name="Device\ARM\ARMCM4\Source\ARM\startup_ARMCM4.s" version="1.0.0">

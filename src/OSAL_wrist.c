@@ -43,7 +43,7 @@ const pTaskEventHandlerFn tasksArr[] =
   GATT_ProcessEvent,
   GAPRole_ProcessEvent,
   GATTServApp_ProcessEvent,
-  App_ProcessEvent
+  appWristProcEvt
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );
@@ -93,7 +93,7 @@ void osalInitTasks( void )
   GATTServApp_Init( taskID++ );
 
   /* Application */
-  appInit( taskID );
+  appWristInit( taskID );
 }
 
 /*********************************************************************

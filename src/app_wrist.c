@@ -18,9 +18,11 @@
 #include "log.h"
 #include "ll.h"
 
-
+#include "light.h"
 #include "app_wrist.h"
 #include "wrist_service.h"
+
+
 // GAP connection handle
 // 事件处理Id
 uint8 AppWrist_TaskID;  
@@ -35,9 +37,9 @@ static uint8 scanData[] =
 {
   0xa,   // length of this data
   GAP_ADTYPE_LOCAL_NAME_COMPLETE,
-  'P',
-  'h',
-  'y',
+  'b',
+  'l',
+  'e',
   'L',
   'i',
   'g',
@@ -72,7 +74,7 @@ static uint8 advertData[] =
  *
  * @return  none
 */
-static void appProcOSALMsg( osal_event_hdr_t *pMsg );
+static void appWristProcOSALMsg( osal_event_hdr_t *pMsg );
 static void WristGapStateCB( gaprole_States_t newState);
 
 // GAP Role Callbacks
@@ -82,26 +84,10 @@ static gapRolesCBs_t WristPeripheralCB =
   NULL                            // When a valid RSSI is read from controller
 };
 
-// 事件处理器
-uint16 App_ProcessEvent( uint8 task_id, uint16 events )
-{
-    if ( events & START_DEVICE_EVT )
-    {
-        // LOG("START_DEVICE_EVT\n");
-        // Start the Device
-        VOID GAPRole_StartDevice( &WristPeripheralCB );
 
-        // Register with bond manager after starting device
-    //    GAPBondMgr_Register( (gapBondCBs_t *) &WristBondCB );
-        
-        return ( events ^ START_DEVICE_EVT );
-    }
-     return 0;
-}
-
-static void appProcOSALMsg( osal_event_hdr_t *pMsg )
+static void appWristProcOSALMsg( osal_event_hdr_t *pMsg )
 {
-    LOG("[fn : appProcOSALMsg]  run event is: %d", pMsg->event);
+    LOG("[fn : appWristProcOSALMsg]  run event is: %d", pMsg->event);
 }
 
 // Notification from the profile of a state change
@@ -205,7 +191,7 @@ static void wristCB(uint8 event, uint8 param_size, uint8* param)
 }
 
 
-void appInit( uint8 task_id)
+void appWristInit( uint8 task_id)
 {
     AppWrist_TaskID = task_id;
 	LOG("\n\n\nappWristInit\n\n\n");
@@ -276,9 +262,47 @@ void appInit( uint8 task_id)
     app_datetime_init();
 
     // Setup a delayed profile startup
-   osal_set_event( AppWrist_TaskID, START_DEVICE_EVT );
+    osal_set_event( AppWrist_TaskID, START_DEVICE_EVT );
+
+    LOG("appWristInit end\n");
+    light_init();
+    LOG("light_init end\n");
+    light_set(0, 100);
 
     LOG("appWristInit end\n");
 
 
+}
+
+// 事件处理器
+uint16 appWristProcEvt( uint8 task_id, uint16 events )
+{
+    if ( events & SYS_EVENT_MSG )
+    {
+        uint8 *pMsg;
+
+        if ( (pMsg = osal_msg_receive( AppWrist_TaskID )) != NULL )
+        {
+        appWristProcOSALMsg( (osal_event_hdr_t *)pMsg );
+
+        // Release the OSAL message
+        VOID osal_msg_deallocate( pMsg );
+        }
+
+        // return unprocessed events
+        return (events ^ SYS_EVENT_MSG);
+    }
+
+    if ( events & START_DEVICE_EVT )
+    {
+        // LOG("START_DEVICE_EVT\n");
+        // Start the Device
+        VOID GAPRole_StartDevice( &WristPeripheralCB );
+
+        // Register with bond manager after starting device
+    //    GAPBondMgr_Register( (gapBondCBs_t *) &WristBondCB );
+        
+        return ( events ^ START_DEVICE_EVT );
+    }
+     return 0;
 }

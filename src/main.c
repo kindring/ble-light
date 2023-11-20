@@ -18,7 +18,7 @@
 #include "adc.h"
 #include "pwrmgr.h"
 #include "string.h"
-// #include "phy_console.h"
+#include "phy_console.h"
 
 extern void  ble_main(void);
 
@@ -36,6 +36,24 @@ static void rf_wakeup_handler(void){
   NVIC_SetPriority((IRQn_Type)BB_IRQ, IRQ_PRIO_REALTIME);
   NVIC_SetPriority((IRQn_Type)CP_TIMER_IRQ, IRQ_PRIO_HIGH);
 }
+
+
+void cons_callback(uint16_t cmd_id, uint8_t argc, char** argv)
+{
+	LOG("cmd id is 0x%x, parameter num is %d\n", cmd_id, argc);
+	for(uint8_t i = 0; i<argc; i++){
+		LOG("param %d : %s\n", i, argv[i]);
+	}
+}
+const cons_cmd_t s_cmd_list[] = {
+	{0x0010, "cmd1"},
+	{0x0011, "cmd2"},
+	{0x0012, "cmd3"},
+	{0x0013, "cmd4"},
+	{0x0014, "cmd5"},
+	{0x0015, "cmd6"},
+	{0, NULL},
+};
 
 
 static void hal_init(void)
@@ -57,7 +75,8 @@ static void hal_init(void)
 //   初始化 ADC（模数转换器）模块
   hal_adc_init();
 	
-//   console_init(s_cmd_list, cons_callback);
+  // 初始化log模块
+  console_init(s_cmd_list, cons_callback);
 	
   LOG("all driver init OK!\n");
 
@@ -110,7 +129,8 @@ int  main(void)
     hal_pwrmgr_init();
 
     hal_rfphy_init();  
-    							
+
+    LOG("start hal_init!\n");		
     hal_init();
 
     app_main();	

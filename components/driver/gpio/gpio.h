@@ -133,11 +133,12 @@ typedef enum{
 	Bit_ENABLE,
 }BitAction_e;
 
+
 typedef enum{
-	FLOATING = 0x00,
-	WEAK_PULL_UP = 0x01,
-	STRONG_PULL_UP = 0x02,
-	PULL_DOWN = 0x03,
+	FLOATING = 0x00,// 悬空
+	WEAK_PULL_UP = 0x01,// 弱上拉
+	STRONG_PULL_UP = 0x02,// 强上拉
+	PULL_DOWN = 0x03,// 下拉
 }IO_Pull_Type_e;
 
 typedef enum{
