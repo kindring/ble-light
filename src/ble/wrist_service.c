@@ -371,120 +371,6 @@ static int cmd_lookup_bracelet(const uint8* data, uint16 len)
   return cmd_response_err(data, len, APP_SUCCESS);
 }
 
-//static int cmd_read_batt_volt(const uint8* data, uint16 len)
-//{
-//  wristRspBatt_t battrsp;
-//  uint16_t volt = (uint16_t)batt_voltage_int();
-//  LOG("cmd_read_batt_volt: %x\n",volt);
-//  battrsp.cmd = data[0];
-//  battrsp.csn = data[1];
-//  battrsp.batt[0] = (uint8_t)(volt&0xff);
-//  battrsp.batt[1] = (uint8_t)((volt>>8)&0xff);
-//  battrsp.chksum = checksum((uint8*)(&battrsp), sizeof(battrsp)-1);
-//  return cmd_response((uint8_t*)(&battrsp), sizeof(battrsp));
-//}
-
-//void msg_notif_dispatch(void)
-//{
-//  notifInfo_t* p_notifInfo = &(sWristService.notifInfo);
-//  ui_ev_t ev;
-//  switch(p_notifInfo->type){
-//  case MSG_NOTIF_T_UNDEF:// 0
-//    break;
-//  case MSG_NOTIF_T_CALL://  1
-//    ev.ev = UI_EV_BLE_CALL;
-//    ui_fsm_run(&ev);
-//    ev.ev = UI_EV_BLE_CALL_INFO;
-//    ev.data = (uint8*)p_notifInfo->data;
-//    ui_fsm_run(&ev);
-//    break;
-//  case MSG_NOTIF_T_CALL_OFF://  2
-//    ev.ev = UI_EV_BLE_CALL_OFF;
-//    ui_fsm_run(&ev);
-//    break;
-//  case MSG_NOTIF_T_SMS://   3
-//    ev.ev = UI_EV_BLE_SMS;
-//    ev.data = (uint8*)p_notifInfo->data;
-//    ui_fsm_run(&ev);
-//    break;
-//  case MSG_NOTIF_T_MAIL://  4
-//    ev.ev = UI_EV_BLE_MAIL;
-//    ev.data = (uint8*)p_notifInfo->data;
-//    ui_fsm_run(&ev);
-//    break;
-//  case MSG_NOTIF_T_WECHAT://  5
-//    ev.ev = UI_EV_BLE_WECHAT;
-//    ev.data = (uint8*)p_notifInfo->data;
-//    ui_fsm_run(&ev);
-//    break;
-//  case MSG_NOTIF_T_QQ://    6
-//    ev.ev = UI_EV_BLE_QQ;
-//    ev.data = (uint8*)p_notifInfo->data;
-//    ui_fsm_run(&ev);
-//    break;
-//  case MSG_NOTIF_T_APP://   7
-//    ev.ev = UI_EV_BLE_MSG_NOTIFY;
-//    ev.data = (uint8*)p_notifInfo->data;
-//    ui_fsm_run(&ev);
-//    break;
-//  default:
-//    break;
-//  }
-//}
-
-//static int cmd_msg_notification(const uint8* data, uint16 len)
-//{
-//  wristCmdNotif_t* p_msg = (wristCmdNotif_t*)data;
-//  notifInfo_t* p_notif_info = &(sWristService.notifInfo);
-//  char* p_data = p_notif_info->data;
-//  uint8 msg_len = len - 4;
-
-//  uint8 msg_type = p_msg->msg_type;
-//  uint8 pkt_type = p_msg->pkt_type;
-//  
-//  bool flg = p_notif_info->flg;
-//  
-//    //if just brief info, discard exist message, replaced new
-//  if(pkt_type == MSG_NOTIF_BRIEF || pkt_type == MSG_NOTIF_BRIEF_E){
-//    memset(p_data, 0, MSG_NOTIF_SIZE);
-//    memcpy(p_data, p_msg->msg_data, msg_len);
-//    p_notif_info->type = msg_type;
-//    p_notif_info->offset = msg_len;
-//    p_notif_info->flg = false;
-//    if(pkt_type == MSG_NOTIF_BRIEF){
-//      p_notif_info->flg = false;
-//      msg_notif_dispatch();
-//      return cmd_response_err(data, len, APP_SUCCESS);
-//    }
-//    else
-//    {
-//      p_notif_info->flg = true;
-//      return cmd_response_err(data, len, MSG_NOTIF_MORE_DATA);
-//    }
-//  }
-//  else if(flg){
-//    if(msg_type != p_notif_info->type){
-//      p_notif_info->type = 0;
-//      return cmd_response_err(data, len, APP_ERR_PARAM);
-//    }
-//    memcpy(p_data + p_notif_info->offset, p_msg->msg_data, msg_len);
-//    p_notif_info->offset += msg_len;
-//    if(pkt_type == MSG_NOTIF_DATA){
-//      p_notif_info->flg = false;
-//      msg_notif_dispatch();
-//      return cmd_response_err(data, len, APP_SUCCESS);
-//    }
-//    else
-//    {
-//      p_notif_info->flg = true;
-//      return cmd_response_err(data, len, MSG_NOTIF_MORE_DATA);
-//    }
-
-//  }
-
-//  return APP_SUCCESS;
-//}
-
 
 int on_recieved_cmd_packet(const uint8* data, uint16 len)
 {
@@ -501,6 +387,8 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
   
   light_set(0, data[0]);
 
+  LOG("response all data");
+  cmd_response(data, len );
   return ret;
 }
 
@@ -722,6 +610,7 @@ static uint8 wristProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
  *
  * @return  Success or Failure
  */
+// 读取蓝牙串口的信息
 static bStatus_t wristProfile_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset )
 {
