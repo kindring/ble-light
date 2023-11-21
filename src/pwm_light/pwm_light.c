@@ -1,8 +1,6 @@
 #include "pwm.h"
 #include "gpio.h"
-#include "OSAL.h"
 #include "gpio.h"
-#include "error.h"
 #include "log.h"
 
 #include "pwm_light.h"
