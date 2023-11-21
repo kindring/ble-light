@@ -87,13 +87,13 @@ static gapRolesCBs_t WristPeripheralCB =
 
 static void appWristProcOSALMsg( osal_event_hdr_t *pMsg )
 {
-    LOG("[fn : appWristProcOSALMsg]  run event is: %d", pMsg->event);
+    LOG("[fn : appWristProcOSALMsg]  run event is: %d \n", pMsg->event);
 }
 
 // Notification from the profile of a state change
 static void WristGapStateCB(gaprole_States_t newState)
 {
-    LOG("app is start WristGapStateCB: %d", newState);
+    LOG("app is start WristGapStateCB: %d \n", newState);
     // if connected
     if (newState == GAPROLE_CONNECTED)
     {

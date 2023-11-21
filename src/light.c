@@ -14,7 +14,7 @@ int light_init(){
     LOG("[light_init]\n");
     // 初始化pwm
     int ret = 0;
-    if()
+    // if()
     ret = pwm_light_init(0, GPIO_WARM, 100, 100, 5, PWM_CLK_DIV_16);
 
     if(ret != 0){
@@ -33,7 +33,7 @@ int light_init(){
 }
 
 int light_set(uint8_t ch, uint8_t val){
-    LOG("[light_set] set ch%d val to %d\n", ch, val);
-    ret = pwm_light_set_val(ch, val);
+    LOG("[light_set] set ch%d val to %d \n", ch, val);
+    int ret = pwm_light_set_val(ch, val);
     return ret;
 }

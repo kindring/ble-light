@@ -9,6 +9,7 @@
 #define CHECK_PWM_PIN if(pin < P0 || pin > P34){return -1;}
 
 
+
 // pwm 结构体
 typedef struct pwm_t {
     PWMN_e pwm_ch;// pwm通道
@@ -48,7 +49,7 @@ extern int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, int val, uint8_t total, ui
  * @param int total 总量
  * @return 0 成功 -1 失败
 */
-extern int pwm_light_set_total(uint8_t ch, int total )
+extern int pwm_light_set_total(uint8_t ch, int total );
 
 /**
  * @brief 设置pwm引脚
