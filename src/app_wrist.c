@@ -191,6 +191,50 @@ static void wristCB(uint8 event, uint8 param_size, uint8* param)
 }
 
 
+static void user_key_1_handler(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("user key 1 handler:%d %d\n", pin, type);
+} 
+static void user_key_2_handler(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("user key 2 handler:%d %d\n", pin, type);
+}
+static void user_key_3_handler(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("user key 3 handler:%d %d\n", pin, type);
+}
+static void user_key_4_handler(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("user key 4 handler:%d %d\n", pin, type);
+}
+
+static void user_key_1_handler_ppp(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("+++ 1 handler ppp:%d %d\n", pin, type);
+} 
+static void user_key_2_handler_ppp(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("+++ 2 handler ppp:%d %d\n", pin, type);
+}
+static void user_key_3_handler_ppp(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("+++ 3 handler ppp:%d %d\n", pin, type);
+}
+static void user_key_4_handler_ppp(GPIO_Pin_e pin, IO_Wakeup_Pol_e type)
+{
+	LOG("+++ 4 handler ppp:%d %d\n", pin, type);
+}
+
+static void getPinState(){
+	LOG("---------------------------------\n\n\n");
+	LOG("P01:%d\n",hal_gpio_read(GPIO_P01));
+	LOG("P02:%d\n",hal_gpio_read(GPIO_P02));
+	LOG("P03:%d\n",hal_gpio_read(GPIO_P03));
+	LOG("P04:%d\n",hal_gpio_read(GPIO_P04));
+	LOG("P05:%d\n",hal_gpio_read(GPIO_P05));
+	LOG("---------------------------------\n");
+}
+
 void appWristInit( uint8 task_id)
 {
     AppWrist_TaskID = task_id;
@@ -271,7 +315,6 @@ void appWristInit( uint8 task_id)
 
     LOG("appWristInit end\n");
 
-
 }
 
 // 事件处理器
@@ -303,6 +346,13 @@ uint16 appWristProcEvt( uint8 task_id, uint16 events )
     //    GAPBondMgr_Register( (gapBondCBs_t *) &WristBondCB );
         
         return ( events ^ START_DEVICE_EVT );
+    }
+
+    if ( events & TIMER_LIGHT_EVT )
+    {
+        LOG("TIMER_LIGHT_EVT\n");
+        getPinState();
+        return ( events ^ TIMER_LIGHT_EVT );
     }
      return 0;
 }

@@ -25,6 +25,9 @@
 /* Profiles */
 #include "peripheral.h"
 
+/* btn */
+#include "btn.h"
+
 /* Application */
 #include "app_wrist.h"
 
@@ -43,7 +46,8 @@ const pTaskEventHandlerFn tasksArr[] =
   GATT_ProcessEvent,
   GAPRole_ProcessEvent,
   GATTServApp_ProcessEvent,
-  appWristProcEvt
+  Key_ProcessEvent,
+  appWristProcEvt,
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );
@@ -91,6 +95,9 @@ void osalInitTasks( void )
   GAPRole_Init( taskID++ );
 
   GATTServApp_Init( taskID++ );
+
+  /** 初始化按钮 事件*/
+  btn_init(taskID++);
 
   /* Application */
   appWristInit( taskID );

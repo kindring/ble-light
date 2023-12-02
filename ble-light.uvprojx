@@ -341,7 +341,7 @@
               <MiscControls>-DADV_NCONN_CFG=0x01   -DADV_CONN_CFG=0x02   -DSCAN_CFG=0x04    -DINIT_CFG=0x08   -DBROADCASTER_CFG=0x01 -DOBSERVER_CFG=0x02   -DPERIPHERAL_CFG=0x04   -DCENTRAL_CFG=0x08   -DHOST_CONFIG=0x4</MiscControls>
               <Define>CFG_CP CFG_QFN32 CFG_SLEEP_MODE=PWR_MODE_NO_SLEEP DEBUG_INFO=1 USE_SYS_TICK HUGE_MODE=0</Define>
               <Undefine></Undefine>
-              <IncludePath>.\src;.\components\inc;.\components\common;.\components\osal\include;.\components\ble\include;.\components\ble\hci;.\components\ble\host;.\components\ble\controller\include;.\components\profiles\DevInfo;.\components\profiles\GATT;.\components\profiles\SimpleProfile;.\components\profiles\Roles;.\components\profiles\ota_app;.\components\profiles\hrs;.\components\driver\common;.\components\driver\log;.\components\driver\gpio;.\components\driver\uart;.\components\driver\i2c;.\components\driver\adc;.\components\driver\clock;.\components\driver\pwm;.\components\driver\pwrmgr;.\components\driver\kscan;.\components\driver\flash;.\components\driver\spi;.\components\driver\i2c;.\components\driver\watchdog;.\components\driver\timer;.\components\libraries\console;.\components\libraries\datetime;.\lib;.\src;.\src\ui;.\src\ble;.\src\pwm_light;.\src\epticore</IncludePath>
+              <IncludePath>.\src;.\components\inc;.\components\common;.\components\osal\include;.\components\ble\include;.\components\ble\hci;.\components\ble\host;.\components\ble\controller\include;.\components\profiles\DevInfo;.\components\profiles\GATT;.\components\profiles\SimpleProfile;.\components\profiles\Roles;.\components\profiles\ota_app;.\components\profiles\hrs;.\components\driver\common;.\components\driver\log;.\components\driver\gpio;.\components\driver\uart;.\components\driver\i2c;.\components\driver\adc;.\components\driver\clock;.\components\driver\pwm;.\components\driver\pwrmgr;.\components\driver\kscan;.\components\driver\flash;.\components\driver\spi;.\components\driver\i2c;.\components\driver\watchdog;.\components\driver\timer;.\components\libraries\console;.\components\libraries\datetime;.\lib;.\src;.\src\ui;.\src\ble;.\src\pwm_light;.\src\epticore;.\src\control;.\src\gpio_key;</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -435,6 +435,7 @@
               <FileType>1</FileType>
               <FilePath>.\components\profiles\ota_app\ota_app_service.c</FilePath>
             </File>
+            
           </Files>
         </Group>
         <Group>
@@ -480,6 +481,17 @@
               <FileType>1</FileType>
               <FilePath>.\src\pwm_light\pwm_light.c</FilePath>
             </File>
+            <File>
+              <FileName>gpio_key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gpio_key\gpio_key.c</FilePath>
+            </File>
+            <File>
+              <FileName>btn.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\control\btn.c</FilePath>
+            </File>
+            
           </Files>
         </Group>
         <Group>
