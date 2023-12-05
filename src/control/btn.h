@@ -37,9 +37,5 @@ extern int btn_init();
 
 uint16 Key_ProcessEvent( uint8 task_id, uint16 events );
 
-// 判断按键是否同时按下
-bool btn_is_all_pressed();
 
-// 模式切换
-void btn_mode_switch();
 #endif
