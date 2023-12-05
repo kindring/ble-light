@@ -16,36 +16,59 @@ pwm_t pwm_light_chann_list[max_pwm_light] = {
     {PWM_CH5, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16},
 };
 
-// 刷新 pwm 引脚
-static void pwm_light_reflash(void)
+// 刷新指定 pwm 引脚
+int pwm_light_reflash(int i)
 {
+    // 获取 pwm
+    pwm_t *pwm = &pwm_light_chann_list[i];
+    // 判断 pwm 通道是否已经初始化;
+    if(pwm->pin == GPIO_DUMMY){
+        return -1;
+    }
+    LOG("pwm ch%d is reflash \n", i);
+    
+    hal_pwm_close_channel(pwm->pwm_ch);
+    hal_pwm_destroy(pwm->pwm_ch);
 
+    hal_pwm_stop();
+
+    hal_gpio_pin_init(pwm->pin, IE);
+    hal_gpio_pull_set(pwm->pin, WEAK_PULL_UP);
+
+    hal_pwm_init(pwm->pwm_ch, pwm->div, PWM_CNT_UP, PWM_POLARITY_FALLING);
+
+    hal_pwm_set_count_val(pwm->pwm_ch, pwm->val, pwm->total);
+
+    hal_pwm_open_channel(pwm->pwm_ch, pwm->pin);
+    hal_pwm_start();
+    return 0;
+}
+
+void pwm_reflash_all(){
     // 遍历 pwm_light_chann_list
     for (int i = 0; i < max_pwm_light; i++)
     {
-        // 获取 pwm
-        pwm_t *pwm = &pwm_light_chann_list[i];
-        // 判断 pwm 通道是否已经初始化;
-        if(pwm->pin == GPIO_DUMMY){
-            continue;
-        }
-        LOG("pwm ch%d is reflash \n", i);
-        
-        hal_pwm_close_channel(pwm->pwm_ch);
-        hal_pwm_destroy(pwm->pwm_ch);
-
-        hal_pwm_stop();
-
-        hal_gpio_pin_init(pwm->pin, IE);
-        hal_gpio_pull_set(pwm->pin, WEAK_PULL_UP);
-
-        hal_pwm_init(pwm->pwm_ch, pwm->div, PWM_CNT_UP, PWM_POLARITY_FALLING);
-
-        hal_pwm_set_count_val(pwm->pwm_ch, pwm->val, pwm->total);
-
-        hal_pwm_open_channel(pwm->pwm_ch, pwm->pin);
+        pwm_light_reflash(i)
     }
-    hal_pwm_start();
+}
+
+int pwm_change_val(int i){
+    // 获取 pwm
+    pwm_t *pwm = &pwm_light_chann_list[i];
+    // 判断 pwm 通道是否已经初始化;
+    if(pwm->pin == GPIO_DUMMY){
+        return -1;
+    }
+    // pwm值保护
+    if(pwm->val > pwm->total){
+        pwm->val = pwm->total;
+    }
+    if(pwm->val < 0){
+        pwm->val = 0;
+    }
+    LOG("pwm ch%d is change val \n", i);
+    hal_pwm_set_count_val(pwm->pwm_ch, pwm->val, pwm->total);
+    return 0;
 }
 
 // 获取 pwm
@@ -56,8 +79,6 @@ pwm_t *pwm_light_get(uint8_t ch)
     {
         ch = 0;
     }
-    
-
     // 获取 pwm
     pwm_t *pwm = &pwm_light_chann_list[ch];
 
@@ -88,8 +109,7 @@ int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, int val, uint8_t total, uint8_t s
     pwm->div = div;
 
     // 刷新 pwm 引脚
-    pwm_light_reflash();
-
+    pwm_reflash_all();
     return 0;
 }
 
@@ -101,6 +121,7 @@ int pwm_light_set_total(uint8_t ch, int total )
     // 获取 pwm
     pwm = &pwm_light_chann_list[ch];
     pwm->total = total;
+    pwm_light_reflash(ch);
 }
 
 int pwm_light_set_pin(uint8_t ch, GPIO_Pin_e pin)
@@ -118,7 +139,7 @@ int pwm_light_set_pin(uint8_t ch, GPIO_Pin_e pin)
     pwm->pin = pin;
 
     // 刷新 pwm 引脚
-    pwm_light_reflash();
+    pwm_light_reflash(ch);
 
     return 0;
 }
@@ -140,8 +161,8 @@ int pwm_light_set_val(uint8_t ch , uint8_t val)
     // 设置 pwm
     pwm->val = val;
     
-    // 刷新 pwm 引脚
-    pwm_light_reflash();
+    // 设置 pwm 引脚值
+    pwm_change_val(ch);
 
     return 0;
 }
@@ -164,7 +185,7 @@ int pwm_light_set_div(uint8_t ch, PWM_CLK_DIV_e div)
     pwm->div = div;
 
     // 刷新 pwm 引脚
-    pwm_light_reflash();
+    pwm_light_reflash(ch);
 
     return 0;
 }

@@ -23,7 +23,9 @@ typedef struct pwm_t {
 // pwm结构体数组 不定长 最大5个
 extern pwm_t pwm_light_list[];
 
-
+int pwm_light_reflash(int i);
+void pwm_reflash_all();
+int pwm_change_val(int i);
 /**
  * @brief 获取pwm
  * @param uint8_t ch 通道
