@@ -385,7 +385,7 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
   // cmdParse();
   LOG("light ctrl %d\n", data[0]);
   
-  light_set(0, data[0]);
+  light_set( data[0] );
 
   LOG("response all data");
   cmd_response(data, len );

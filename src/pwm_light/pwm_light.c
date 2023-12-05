@@ -48,7 +48,7 @@ void pwm_reflash_all(){
     // 遍历 pwm_light_chann_list
     for (int i = 0; i < max_pwm_light; i++)
     {
-        pwm_light_reflash(i)
+        pwm_light_reflash(i);
     }
 }
 

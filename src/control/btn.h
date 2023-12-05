@@ -9,11 +9,13 @@
 #define Light_MODE TRUE
 #define Temp_MODE FALSE
 
-// 按下按钮后,1000ms后检测另一个按钮是否按下,如果按下则切换模式
-#define TIME_CHECK_TEMP 1000
+// 按下按钮后,如果在
+#define TIME_CHECK_TEMP 100
 
 // 事件定义
-#define EVT_TIME_CHECK 0x0008 // 检测另一个按钮是否已经按下
+#define BTN_EVT_TIME_CHECK 0x0008 // 检测是否连续长按
+#define BTN_EVT_TEMP_CHECK 0x0010 // 色温检测
+
 
 extern uint8 task_btn_id;
 // 按钮调整模式  true: 亮度调节  false: 色温调节
