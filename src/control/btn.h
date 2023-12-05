@@ -8,6 +8,13 @@
 
 #define Light_MODE TRUE
 #define Temp_MODE FALSE
+
+// 按下按钮后,1000ms后检测另一个按钮是否按下,如果按下则切换模式
+#define TIME_CHECK_TEMP 1000
+
+// 事件定义
+#define EVT_TIME_CHECK 0x0008 // 检测另一个按钮是否已经按下
+
 extern uint8 task_btn_id;
 // 按钮调整模式  true: 亮度调节  false: 色温调节
 extern bool btn_mode;
@@ -21,6 +28,7 @@ typedef struct {
 } btn_all_pressed_t;
 
 // 同时按下的按键数组, 用于判断是否同时按下
+#define ALL_PRESSED_LEN 1
 extern btn_all_pressed_t btn_all_pressed[];
 
 // 按钮状态

@@ -6,7 +6,7 @@
 #define HAL_KEY_SUPPORT_LONG_PRESS
 // 是否启用按钮长按. 启用则设定长按时间
 #ifdef HAL_KEY_SUPPORT_LONG_PRESS
-#define HAL_KEY_LONG_PRESS_TIME      700    //2s
+#define HAL_KEY_LONG_PRESS_TIME      300    //2s
 #define KEY_DEMO_LONG_PRESS_EVT   0x0200 
 #endif
 
