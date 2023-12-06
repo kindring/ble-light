@@ -12,22 +12,19 @@ uint8 task_btn_id;
 #define KEY_DEMO_CYCLE_TIMER     0x0002
 
 int last_release_btn_ind = -1;
-bool isLongCheck = false;
 
 int temp = 2500;
 int light = 100;
 void evt_press_release(int i){
 	// 短按抬起  400ms 后检测是否还处于按下状态
-	if ( isLongCheck = true)
-	{
-		return;
-	}
-	osal_start_timerEx(task_btn_id, BTN_EVT_TIME_CHECK, TIME_CHECK_TEMP * 4);
+	LOG("evt_press_release %d\n", i);
 	last_release_btn_ind = i;
+	osal_stop_timerEx(task_btn_id, BTN_EVT_TIME_CHECK);
 }
 
 void changeTemp(int i)
 {
+	LOG("changeTemp \n");
 	switch (i)
 	{
 	case 0:
@@ -42,6 +39,7 @@ void changeTemp(int i)
 	
 		break;
 	}
+	LOG("changeTemp temp=>>> %d\n", temp);
 	temp_set(temp);
 }
 
@@ -66,25 +64,13 @@ void changeLight(int i)
 
 static void key_press_evt(uint8_t i,key_evt_t key_evt)
 {
-	LOG("\nkey index:%d gpio:%d ",i,key_state.key[i].pin);
+	LOG("\nkey index:%d gpio:%d \n",i,key_state.key[i].pin);
 	switch(key_evt)
 	{
 		case HAL_KEY_EVT_PRESS:
 			LOG("key(press down)\n");	
-			if (last_release_btn_ind != -1)
-			{
-				if (last_release_btn_ind == i)	
-				{
-					// 按下后再次按下
-					isLongCheck = true;
-				}
-			}else
-			{
-				osal_stop_timerEx(task_btn_id, BTN_EVT_TIME_CHECK);
-				isLongCheck = false;
-				last_release_btn_ind = -1;
-				changeLight(i);
-			}
+			osal_start_timerEx(task_btn_id, BTN_EVT_TIME_CHECK, HAL_KEY_LONG_PRESS_TIME + TIME_CHECK_TEMP);
+			changeLight(i);
 			
 #ifdef HAL_KEY_SUPPORT_LONG_PRESS
 			osal_start_timerEx(task_btn_id, KEY_DEMO_LONG_PRESS_EVT, HAL_KEY_LONG_PRESS_TIME);
@@ -99,7 +85,6 @@ static void key_press_evt(uint8_t i,key_evt_t key_evt)
 #ifdef HAL_KEY_SUPPORT_LONG_PRESS		
 		case HAL_KEY_EVT_LONG_RELEASE:
 			LOG("key(long press release)\n");
-			isLongCheck = false;
 			break;
 #endif
 		
@@ -174,15 +159,16 @@ uint16 Key_ProcessEvent( uint8 task_id, uint16 events )
 #endif
 
 	if( events & BTN_EVT_TIME_CHECK){
-		
-		if(last_release_btn_ind != -1 && isLongCheck)
+		LOG("BTN_EVT_TIME_CHECK i: %d \n", last_release_btn_ind);
+		if(last_release_btn_ind != -1)
 		{
+			LOG(" io state %d", key_state.key[last_release_btn_ind].state );
 			if (
-				key_state.key[last_release_btn_ind].state == HAL_KEY_EVT_PRESS ||
-				key_state.key[last_release_btn_ind].state == HAL_KEY_EVT_LONG_PRESS 
+				key_state.key[last_release_btn_ind].state == HAL_STATE_KEY_PRESS 
 				)
 			{
-				LOG("长按 \n");
+				LOG("long press --- \n");
+				osal_start_timerEx(task_btn_id, BTN_EVT_TIME_CHECK, TIME_CHECK_TEMP);
 				changeTemp(last_release_btn_ind);
 			}
 		}

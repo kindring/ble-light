@@ -25,7 +25,7 @@ int pwm_light_reflash(int i)
     if(pwm->pin == GPIO_DUMMY){
         return -1;
     }
-    LOG("pwm ch%d is reflash \n", i);
+    // LOG("pwm ch%d is reflash \n", i);
     
     hal_pwm_close_channel(pwm->pwm_ch);
     hal_pwm_destroy(pwm->pwm_ch);
@@ -66,7 +66,7 @@ int pwm_change_val(int i){
     if(pwm->val < 0){
         pwm->val = 0;
     }
-    LOG("pwm ch%d is change val \n", i);
+    // LOG("pwm ch%d is change val \n", i);
     hal_pwm_set_count_val(pwm->pwm_ch, pwm->val, pwm->total);
     return 0;
 }
@@ -113,7 +113,7 @@ int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, uint32_t val, uint32_t total, uin
     return 0;
 }
 
-int pwm_light_set_total(uint8_t ch, int total )
+int pwm_light_set_total(uint8_t ch, uint32_t total)
 {
     pwm_t *pwm;
     // 判断 ch 是否合法
@@ -157,7 +157,7 @@ int pwm_light_set_val(uint8_t ch , uint32_t val)
         val = pwm->total;
     }
 
-    LOG("light val %d --->> %d \n", pwm->val, val);
+    // LOG("light val %d --->> %d \n", pwm->val, val);
     // 设置 pwm
     pwm->val = val;
     
