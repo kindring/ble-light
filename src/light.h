@@ -21,7 +21,7 @@
 
 extern int light_init(void);
 
-extern int light_ch_set(uint8_t ch, uint8_t val);
+extern int light_ch_set(uint8_t ch, uint16_t val);
 
 // 计算冷暖光的亮度值,并且设置
 int comLightVal();

@@ -17,14 +17,14 @@ int light_init(){
     // 初始化pwm
     int ret = 0;
     // if()
-    ret = pwm_light_init(WARM_CH, GPIO_WARM, 10000, 10000, 5, PWM_CLK_DIV_16);
+    ret = pwm_light_init(WARM_CH, GPIO_WARM, 1000, 1000, 5, PWM_CLK_DIV_16);
 
     if(ret != 0){
         LOG("[light_init] pwm_light_init warm failed %d \n", ret);
         return ret;
     }
 
-    ret = pwm_light_init(COLD_CH, GPIO_COLD, 10000, 10000, 5, PWM_CLK_DIV_16);
+    ret = pwm_light_init(COLD_CH, GPIO_COLD, 1000, 1000, 5, PWM_CLK_DIV_16);
 
     if(ret != 0){
         LOG("[light_init] pwm_light_init cold failed  %d \n", ret);
@@ -34,7 +34,7 @@ int light_init(){
     return ret;
 }
 
-int light_ch_set(uint8_t ch, uint8_t val){
+int light_ch_set(uint8_t ch, uint16_t val){
     LOG("[light_set] set ch%d val to %d \n", ch, val);
     int ret = pwm_light_set_val(ch, val);
     return ret;
@@ -51,8 +51,8 @@ int comLightVal(){
     // 色温范围 2500~6500
     // 暖色温最大亮度值 = 亮度值 * (色温 - 2500) / (6500 - 2500)
     // 亮度调整偏移后的暖色温亮度值 = 暖色温最大亮度值 + 亮度值 * 2500 / (6500 - 2500)
-    int tmp_warm_val = 10000 * (temp_val - 2500) / (6500 - 2500);
-    int tmp_cold_val = 10000 - tmp_warm_val;
+    int tmp_warm_val = 1000 * (temp_val - 2500) / (6500 - 2500);
+    int tmp_cold_val = 1000 - tmp_warm_val;
     int warm_val = light_val * tmp_warm_val / 50;
     int cold_val = light_val * tmp_cold_val / 50;
     LOG("[comLightVal] warm_val %d, cold_val %d \n", warm_val, cold_val);

@@ -68,7 +68,7 @@ extern int pwm_light_set_pin(uint8_t ch, GPIO_Pin_e pin);
  * @param val 新值
  * @return 0 成功 -1 失败
 */
-extern int pwm_light_set_val(uint8_t ch , uint8_t val);
+extern int pwm_light_set_val(uint8_t ch , uint16_t val);
 
 /**
  * @brief 设置pwm频率

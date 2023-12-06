@@ -144,7 +144,7 @@ int pwm_light_set_pin(uint8_t ch, GPIO_Pin_e pin)
     return 0;
 }
 
-int pwm_light_set_val(uint8_t ch , uint8_t val)
+int pwm_light_set_val(uint8_t ch , uint16_t val)
 {
     pwm_t *pwm;
     // 判断 ch 是否合法
@@ -163,7 +163,7 @@ int pwm_light_set_val(uint8_t ch , uint8_t val)
     
     // 设置 pwm 引脚值
     pwm_change_val(ch);
-
+    pwm_light_reflash(ch);
     return 0;
 }
 
