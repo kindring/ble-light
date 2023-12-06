@@ -14,9 +14,9 @@
 typedef struct pwm_t {
     PWMN_e pwm_ch;// pwm通道
     GPIO_Pin_e pin;// gpio引脚
-    uint8_t val;// 当前值 15
-    uint8_t total;// 总量 0-100
-    uint8_t step;// 步长 5
+    uint32_t val;// 当前值 15
+    uint32_t total;// 总量 0-100
+    uint32_t step;// 步长 5
     PWM_CLK_DIV_e div;// pwm时钟分频
 } pwm_t;
 
@@ -43,7 +43,7 @@ extern pwm_t *pwm_light_get(uint8_t ch);
  * @param PWM_CLK_DIV_e div 分频
  * @return 0 成功 -1 失败
 */
-extern int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, int val, uint8_t total, uint8_t step, PWM_CLK_DIV_e div);
+extern int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, uint32_t val, uint32_t total, uint8_t step, PWM_CLK_DIV_e div);
 
 /**
  * @brief 设置pwm总量
@@ -51,7 +51,7 @@ extern int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, int val, uint8_t total, ui
  * @param int total 总量
  * @return 0 成功 -1 失败
 */
-extern int pwm_light_set_total(uint8_t ch, int total );
+extern int pwm_light_set_total(uint8_t ch, uint32_t total );
 
 /**
  * @brief 设置pwm引脚
@@ -68,7 +68,7 @@ extern int pwm_light_set_pin(uint8_t ch, GPIO_Pin_e pin);
  * @param val 新值
  * @return 0 成功 -1 失败
 */
-extern int pwm_light_set_val(uint8_t ch , uint16_t val);
+extern int pwm_light_set_val(uint8_t ch , uint32_t val);
 
 /**
  * @brief 设置pwm频率

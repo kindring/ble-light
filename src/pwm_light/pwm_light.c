@@ -86,7 +86,7 @@ pwm_t *pwm_light_get(uint8_t ch)
 }
 
 // 初始化 pwm
-int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, int val, uint8_t total, uint8_t step, PWM_CLK_DIV_e div)
+int pwm_light_init(uint8_t ch, GPIO_Pin_e pin, uint32_t val, uint32_t total, uint8_t step, PWM_CLK_DIV_e div)
 {
     pwm_t *pwm;
     // 判断 ch 是否合法
@@ -144,7 +144,7 @@ int pwm_light_set_pin(uint8_t ch, GPIO_Pin_e pin)
     return 0;
 }
 
-int pwm_light_set_val(uint8_t ch , uint16_t val)
+int pwm_light_set_val(uint8_t ch , uint32_t val)
 {
     pwm_t *pwm;
     // 判断 ch 是否合法
