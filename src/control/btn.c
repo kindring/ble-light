@@ -13,11 +13,10 @@ uint8 task_btn_id;
 
 int last_release_btn_ind = -1;
 
-int temp = 2500;
-int light = 100;
+
 void evt_press_release(int i){
 	// 短按抬起  400ms 后检测是否还处于按下状态
-	LOG("evt_press_release %d\n", i);
+	// LOG("evt_press_release %d\n", i);
 	last_release_btn_ind = i;
 	osal_stop_timerEx(task_btn_id, BTN_EVT_TIME_CHECK);
 }
@@ -25,6 +24,7 @@ void evt_press_release(int i){
 void changeTemp(int i)
 {
 	LOG("changeTemp \n");
+	int temp = light_data.temp;
 	switch (i)
 	{
 	case 0:
@@ -45,6 +45,7 @@ void changeTemp(int i)
 
 void changeLight(int i)
 {
+	int light = light_data.light;
 	switch (i)
 	{
 	case 0:
@@ -64,11 +65,11 @@ void changeLight(int i)
 
 static void key_press_evt(uint8_t i,key_evt_t key_evt)
 {
-	LOG("\nkey index:%d gpio:%d \n",i,key_state.key[i].pin);
+	// LOG("\nkey index:%d gpio:%d \n",i,key_state.key[i].pin);
 	switch(key_evt)
 	{
 		case HAL_KEY_EVT_PRESS:
-			LOG("key(press down)\n");	
+			// LOG("key(press down)\n");	
 			osal_start_timerEx(task_btn_id, BTN_EVT_TIME_CHECK, HAL_KEY_LONG_PRESS_TIME + TIME_CHECK_TEMP);
 			changeLight(i);
 			
@@ -78,13 +79,13 @@ static void key_press_evt(uint8_t i,key_evt_t key_evt)
 			break;
 		
 		case HAL_KEY_EVT_RELEASE:
-			LOG("key(press release)\n");
+			// LOG("key(press release)\n");
 			evt_press_release(i);
 			break;
 
 #ifdef HAL_KEY_SUPPORT_LONG_PRESS		
 		case HAL_KEY_EVT_LONG_RELEASE:
-			LOG("key(long press release)\n");
+			// LOG("key(long press release)\n");
 			break;
 #endif
 		
@@ -123,17 +124,17 @@ uint16 Key_ProcessEvent( uint8 task_id, uint16 events )
 		return 0;
 	}
 	if( events & KEY_DEMO_ONCE_TIMER){		
-		LOG("once timer\n\n");
+		// LOG("once timer\n\n");
 		osal_start_timerEx( task_btn_id, KEY_DEMO_ONCE_TIMER , 5000);
 		return (events ^ KEY_DEMO_ONCE_TIMER);
 	}
 	if( events & KEY_DEMO_CYCLE_TIMER){		
-		LOG("recycle timer\n\n");
+		// LOG("recycle timer\n\n");
 		return (events ^ KEY_DEMO_CYCLE_TIMER);
 	}
 	
 	if( events & HAL_KEY_EVENT){	
-		LOG("HAL_KEY_EVENT \n");											//do not modify,key will use it
+		// LOG("HAL_KEY_EVENT \n");											//do not modify,key will use it
 		for (uint8 i = 0; i < HAL_KEY_NUM; ++i){
 			if ((key_state.temp[i].in_enable == TRUE)||
 			(key_state.key[i].state == HAL_STATE_KEY_RELEASE_DEBOUNCE)){
@@ -149,8 +150,9 @@ uint16 Key_ProcessEvent( uint8 task_id, uint16 events )
 		// LOG("KEY_DEMO_LONG_PRESS_EVT\n");
 		for (int i = 0; i <= HAL_KEY_NUM; i++){
 			// LOG("%d --- state [%d]",i, key_state.key[i].state);
-			if(key_state.key[i].state == HAL_KEY_EVT_PRESS)
+			if(key_state.key[i].state == HAL_STATE_KEY_PRESS)
 			{
+				LOG("long press --- \n");
 				osal_start_timerEx(task_btn_id, KEY_DEMO_LONG_PRESS_EVT, HAL_KEY_LONG_PRESS_TIME);
 			}
 		}
@@ -159,15 +161,15 @@ uint16 Key_ProcessEvent( uint8 task_id, uint16 events )
 #endif
 
 	if( events & BTN_EVT_TIME_CHECK){
-		LOG("BTN_EVT_TIME_CHECK i: %d \n", last_release_btn_ind);
+		// LOG("BTN_EVT_TIME_CHECK i: %d \n", last_release_btn_ind);
 		if(last_release_btn_ind != -1)
 		{
-			LOG(" io state %d", key_state.key[last_release_btn_ind].state );
+			// LOG(" io state %d", key_state.key[last_release_btn_ind].state );
 			if (
 				key_state.key[last_release_btn_ind].state == HAL_STATE_KEY_PRESS 
 				)
 			{
-				LOG("long press --- \n");
+				// LOG("long press --- \n");
 				osal_start_timerEx(task_btn_id, BTN_EVT_TIME_CHECK, TIME_CHECK_TEMP);
 				changeTemp(last_release_btn_ind);
 			}
