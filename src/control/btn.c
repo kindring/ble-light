@@ -2,10 +2,10 @@
 #include "clock.h"
 #include "log.h"
 #include "gpio.h"
-#include "light.h"
+
 
 #include "btn.h"
-
+#include "light.h"
 
 uint8 task_btn_id;
 #define KEY_DEMO_ONCE_TIMER      0x0001

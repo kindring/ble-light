@@ -19,19 +19,23 @@ int light_init(){
     int ret = 0;
     // if()
     ret = pwm_light_init(WARM_CH, GPIO_WARM, _light_total, _light_total, 5, PWM_CLK_DIV_16);
-
+    ret = pwm_light_init(WARM_CH, GPIO_WARM2, _light_total, _light_total, 5, PWM_CLK_DIV_16);
     if(ret != 0){
         LOG("[light_init] pwm_light_init warm failed %d \n", ret);
         return ret;
     }
 
     ret = pwm_light_init(COLD_CH, GPIO_COLD, _light_total, _light_total, 5, PWM_CLK_DIV_16);
-
+    ret = pwm_light_init(COLD_CH, GPIO_COLD2, _light_total, _light_total, 5, PWM_CLK_DIV_16);
     if(ret != 0){
         LOG("[light_init] pwm_light_init cold failed  %d \n", ret);
         return ret;
     }
 
+    // 拉低 warm2 与 cold2 的电平
+
+    // hal_gpio_pull_set(GPIO_WARM2, PULL_DOWN);
+    // hal_gpio_pull_set(GPIO_COLD2, PULL_DOWN);
     return ret;
 }
 

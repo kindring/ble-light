@@ -3,9 +3,11 @@
 
 // 暖光 pwm脚
 #define GPIO_WARM P18
+#define GPIO_WARM2 P15
 #define WARM_CH 0
 // 冷光 pwm脚
 #define GPIO_COLD P20
+#define GPIO_COLD2 P31
 #define COLD_CH 1
 
 // 风扇 pwm
@@ -19,6 +21,13 @@
 // adc 电源监测脚
 #define GPIO_POWER P28
 
+// 灯光数据 色温, 亮度
+typedef struct {
+    int temp;
+    int light;
+} light_data_t;
+
+extern light_data_t light_data;
 extern int light_init(void);
 
 extern int light_ch_set(uint8_t ch, uint16_t val);
@@ -31,10 +40,5 @@ extern int temp_set(int temp);
 
 
 
-// 灯光数据 色温, 亮度
-typedef struct {
-    int temp;
-    int light;
-} light_data_t;
 
 #endif
