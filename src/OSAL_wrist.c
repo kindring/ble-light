@@ -28,6 +28,9 @@
 /* btn */
 #include "btn.h"
 
+/* light */
+#include "light.h"
+
 /* Application */
 #include "app_wrist.h"
 
@@ -98,7 +101,10 @@ void osalInitTasks( void )
 
   /** 初始化按钮 事件*/
   btn_init(taskID++);
-
+  LOG("btn_init end\n");
+  /** 初始化灯光*/
+  light_init(taskID++);
+  LOG("light_init end\n");
   /* Application */
   appWristInit( taskID );
 }

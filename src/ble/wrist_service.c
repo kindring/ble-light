@@ -380,15 +380,17 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
   uint8 err_data = 0;
   LOG("RX Cmd:");
   print_hex(data, len);
-  int i = 0;
+  int i = 0,ret = 0;
+  uint8 *resData;
+  uint16 resLen;
   // 第一位为命令字 第二位为 值
   // cmdParse();
-  LOG("light ctrl %d\n", data[0]);
-  
-  light_set( data[0] );
-
+  resLen = parse_light_code(data, len, resData);
+  if(resLen < 1){
+    resLen = light_set(data[0], 0, resData);
+  }
   LOG("response all data");
-  cmd_response(data, len );
+  cmd_response(resData, resLen);
   return ret;
 }
 
@@ -425,6 +427,10 @@ static int cmd_response(const uint8* data, uint16 len)
     notif.value[i] = data[i];
 
   return wristProfile_Notify(&notif);
+}
+
+CallbackFunc light_callback(uint8 *res, uint16 len){
+  return cmd_response(res, len);
 }
 
 
@@ -524,7 +530,8 @@ bStatus_t wristProfile_AddService(wristServiceCB_t cb)
                                           &wristProfileCBs );
 
   wristServiceCB = cb;
-
+  // 注册led回调函数
+  light_register_notify_callback(light_callback);
   return ( status );
 }
 

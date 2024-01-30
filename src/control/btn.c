@@ -28,19 +28,19 @@ void changeTemp(int i)
 	switch (i)
 	{
 	case 0:
-		temp = temp + 50;
-		if (temp > 6500){ temp = 6500;}
+		temp = temp + TEMP_STEP;
+		if (temp > TEMP_MAX){ temp = TEMP_MAX;}
 		break;
 	case 1:
-		temp = temp - 50;
-		if (temp < 2500){ temp = 2500;}
+		temp = temp - TEMP_STEP;
+		if (temp < TEMP_MIN){ temp = TEMP_MIN;}
 		break;
 	default:
 	
 		break;
 	}
 	LOG("changeTemp temp=>>> %d\n", temp);
-	temp_set(temp);
+	temp_set(temp, 0, NULL);
 }
 
 void changeLight(int i)
@@ -49,18 +49,18 @@ void changeLight(int i)
 	switch (i)
 	{
 	case 0:
-		light = light + 5;
+		light = light + LIGHT_STEP;
 		if (light > 100){ light = 100;}
 		break;
 	case 1:
-		light = light - 5;
+		light = light - LIGHT_STEP;
 		if (light < 0){ light = 0;}
 		break;
 	default:
 	
 		break;
 	}
-	light_set(light);
+	light_set(light, 0, NULL);
 }
 
 static void key_press_evt(uint8_t i,key_evt_t key_evt)

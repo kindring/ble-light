@@ -301,6 +301,7 @@ void appWristInit( uint8 task_id)
     GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
     DevInfo_AddService( );
     ota_app_AddService();
+    // 初始化蓝牙模块
     wristProfile_AddService(wristCB);
 
     app_datetime_init();
@@ -309,13 +310,11 @@ void appWristInit( uint8 task_id)
     osal_set_event( AppWrist_TaskID, START_DEVICE_EVT );
 
     LOG("appWristInit end\n");
-    light_init();
-    LOG("light_init end\n");
+    
     // 初始化按键
-    temp_set(5500);
+    temp_set(5500, 0, NULL);
     LOG("temp_set end\n");
-    light_set(100);
-
+    light_set(100, 0, NULL);
     LOG("appWristInit end\n");
 
 }
