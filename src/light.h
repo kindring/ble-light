@@ -81,7 +81,7 @@ typedef struct {
 extern light_data_t light_data;
 
 // 通知回调函数
-typedef void (*CallbackFunc)(uint8 *res, uint16 len);
+typedef void (*LightCallbackFunc) (uint8 *res, uint16 len);
 
 
 extern int light_init(int taskId);
@@ -91,6 +91,8 @@ extern int light_ch_set(uint8_t ch, uint16_t val);
 // 计算冷暖光的亮度值,并且设置
 int comLightVal();
 
+uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len,  uint8_t *res);
+
 extern uint16 light_set(uint8_t val, uint8_t sn, uint8 *res);
 extern uint16 temp_set(int temp, uint8_t sn, uint8 *res);
 extern uint16 open_light(uint8_t sn, uint8 *res);
@@ -98,7 +100,7 @@ extern uint16 close_light(uint8_t sn, uint8 *res);
 extern uint16 change_light_mode (light_cmd_start_code mode, uint8_t sn, uint8 *res);
 extern uint16 parse_light_code(uint8* data, uint16 len, uint8 *res);
 
-extern void light_register_notify_callback(CallbackFunc callback);
+extern void light_register_notify_callback(LightCallbackFunc callback);
 
 
 

@@ -380,7 +380,7 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
   uint8 err_data = 0;
   LOG("RX Cmd:");
   print_hex(data, len);
-  int i = 0,ret = 0;
+  int i = 0;
   uint8 *resData;
   uint16 resLen;
   // 第一位为命令字 第二位为 值
@@ -429,8 +429,8 @@ static int cmd_response(const uint8* data, uint16 len)
   return wristProfile_Notify(&notif);
 }
 
-CallbackFunc light_callback(uint8 *res, uint16 len){
-  return cmd_response(res, len);
+void  light_callback(uint8 *res, uint16 len){
+   cmd_response(res, len);
 }
 
 
