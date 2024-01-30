@@ -55,7 +55,7 @@ typedef enum{
     CMD_QUERY = 0x03,
     CMD_LIGTH = 0x04,
     CMD_TEMP = 0x05,
-    CMD_FUN = 0x06,
+    CMD_FAN = 0x06,
     CMD_MODE = 0x07,
     CMD_CH = 0x08,
     CMD_HZ = 0x09,
