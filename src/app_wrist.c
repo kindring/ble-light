@@ -93,7 +93,7 @@ static void appWristProcOSALMsg( osal_event_hdr_t *pMsg )
 // Notification from the profile of a state change
 static void WristGapStateCB(gaprole_States_t newState)
 {
-    LOG("app is start WristGapStateCB: %d \n", newState);
+    LOG("app is start gapProfileState: %d WristGapStateCB: %d  \n", gapProfileState,  newState);
     // if connected
     if (newState == GAPROLE_CONNECTED)
     {
@@ -308,15 +308,13 @@ void appWristInit( uint8 task_id)
 
     // Setup a delayed profile startup
     osal_set_event( AppWrist_TaskID, START_DEVICE_EVT );
-
+    // light_init(-1);
     LOG("appWristInit end\n");
-    
     // 初始化按键
     temp_set(5500, 0, NULL);
     LOG("temp_set end\n");
-    light_set(100, 0, NULL);
+    light_set(10, 0, NULL);
     LOG("appWristInit end\n");
-
 }
 
 // 事件处理器

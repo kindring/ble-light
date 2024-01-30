@@ -98,9 +98,9 @@ static void key_press_evt(uint8_t i,key_evt_t key_evt)
 // key_state 引入
 
 // 初始化按钮
-int btn_init(task_id){
+void btn_init(uint8 taskId){
     LOG("[btn_init]\n");
-    task_btn_id = task_id;
+    task_btn_id = taskId;
     // 初始化pwm
     for (int i = 0; i < HAL_KEY_NUM; i++)
     {
@@ -113,8 +113,6 @@ int btn_init(task_id){
     key_state.task_id = task_btn_id;
 	key_state.key_callbank = key_press_evt;
 	key_init();
-
-    return 1;
 }
 
 // 按钮事件处理函数

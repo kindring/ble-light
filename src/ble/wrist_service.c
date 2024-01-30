@@ -83,6 +83,7 @@ CONST uint8 wristServUUID[ATT_BT_UUID_SIZE] =
   LO_UINT16(WRIST_SERV_UUID), HI_UINT16(WRIST_SERV_UUID)
 };
 
+
 // Characteristic 1 UUID: 0xFF02
 CONST uint8 wristProfilecharCommandUUID[ATT_BT_UUID_SIZE] =
 { 
@@ -353,14 +354,6 @@ static int cmd_get_time(const uint8* data, uint16 len)
 //  return cmd_response_err(data, len, APP_SUCCESS);
 //}
 
-static int cmd_light_ctrl(const uint8_t* data, uint16_t len)
-{
-  int ret;
-  wristCmdLight_t* plight = (wristCmdLight_t*)data;
-  ret = light_ctrl(plight->ch, plight->value);
-  ret = (ret == PPlus_SUCCESS) ? APP_SUCCESS: APP_ERR_PARAM;
-  return cmd_response_err(data, len, ret);
-}
 
 static int cmd_lookup_bracelet(const uint8* data, uint16 len)
 {
@@ -386,10 +379,12 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
   // 第一位为命令字 第二位为 值
   // cmdParse();
   resLen = parse_light_code(data, len, resData);
+  LOG("resLen: %d\n", resLen);
   if(resLen < 1){
+    LOG("parse_light_code error use set light %d\n", data[0]);
     resLen = light_set(data[0], 0, resData);
   }
-  LOG("response all data");
+  print_hex(resData, resLen);
   cmd_response(resData, resLen);
   return ret;
 }
@@ -419,7 +414,11 @@ static int cmd_response(const uint8* data, uint16 len)
 {
   int i;
   attHandleValueNoti_t notif;
-  
+  if (data == NULL || len < 1)
+  {
+    LOG("cmd_response: data is empty\n");
+    return -1;
+  }
   memset(&notif, 0, sizeof(notif));
 
   notif.len = len;
@@ -429,8 +428,14 @@ static int cmd_response(const uint8* data, uint16 len)
   return wristProfile_Notify(&notif);
 }
 
-void  light_callback(uint8 *res, uint16 len){
-   cmd_response(res, len);
+void light_callback(uint8 *res, uint16 len){
+  // log
+  LOG("light_callback[%d]: %s ", len, &res);
+  if(res == NULL || len < 1){
+    LOG("data is empty len: %d\n", len);
+    return;
+  }
+  cmd_response(res, len);
 }
 
 

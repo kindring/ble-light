@@ -18,7 +18,7 @@ light_data_t light_data = {true, TEMP_MAX, 100, LIGHT_MODE_DEFAULT, 100};
 // 通知回调函数
 LightCallbackFunc notify_callback = NULL;
 
-int light_init(int taskId){
+void light_init(uint8 taskId){
     LOG("[light_init]\n");
     task_light_id = taskId;
     // 初始化pwm
@@ -27,21 +27,20 @@ int light_init(int taskId){
     ret = pwm_light_init(WARM_CH, GPIO_WARM2, _light_total, _light_total, 5, PWM_CLK_DIV_16);
     if(ret != 0){
         LOG("[light_init] pwm_light_init warm failed %d \n", ret);
-        return ret;
+        return ;
     }
 
     ret = pwm_light_init(COLD_CH, GPIO_COLD, _light_total, _light_total, 5, PWM_CLK_DIV_16);
     ret = pwm_light_init(COLD_CH, GPIO_COLD2, _light_total, _light_total, 5, PWM_CLK_DIV_16);
     if(ret != 0){
         LOG("[light_init] pwm_light_init cold failed  %d \n", ret);
-        return ret;
+        return ;
     }
 
     // 拉低 warm2 与 cold2 的电平
 
     // hal_gpio_pull_set(GPIO_WARM2, PULL_DOWN);
     // hal_gpio_pull_set(GPIO_COLD2, PULL_DOWN);
-    return ret;
 }
 
 int light_ch_set(uint8_t ch, uint16_t val){
@@ -54,7 +53,7 @@ int light_ch_set(uint8_t ch, uint16_t val){
 
 
 // 计算 冷暖光的亮度值
-int comLightVal(){
+uint8_t comLightVal(){
     int light_val = light_data.light, temp_val = light_data.temp;
     // 根据色温与亮度来计算冷暖灯光对应的亮度值
     // 亮度值范围 0~100 翻 100倍
@@ -104,11 +103,9 @@ int comLightVal(){
 uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len, uint8_t *res){
     // 响应码 `起始码` `长度` `命令码` `sn码` `数据1` `数据2`
     // 0x6c 0x06 0x01 0x64 
-    if (res == NULL)
-    {
-        return -1;
-    }
     // 判断是否有sn码,有则为响应,没有则为通知
+    // 申请内存
+    res = (uint8_t *)osal_mem_alloc(len + 4);
     if(sn == 0)
     {
         res[0] = START_CODE_NOTIFY;
@@ -124,8 +121,10 @@ uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len, uint8_t *
     res[3] = sn;
     // 数据可能为空
     if(len > 0){
+        // 数据拷贝
         memcpy(res + 4, data, len);
     }
+    // 打印hex值
     return len + 4;
 }
 
@@ -172,7 +171,7 @@ uint16 query_light(uint8_t sn , uint8 *res){
 }
 
 // 亮度调节
-uint16 light_set(uint8_t val, uint8_t sn , uint8 *res){
+uint16 light_set(uint8 val, uint8_t sn , uint8 *res){
     // LOG("[light_set] set light val to %d \n", val);
     // 亮度值为 0~100
     if(val > 100){
@@ -180,7 +179,7 @@ uint16 light_set(uint8_t val, uint8_t sn , uint8 *res){
     }
     light_data.light = val;
     comLightVal();
-    uint8_t data[1] = {val};
+    uint8 data[1] = {val};
     uint16 resLen = 0;
     if(res == NULL && notify_callback != NULL)
     {
@@ -219,12 +218,13 @@ uint16 temp_set(int temp, uint8_t sn , uint8 *res){
 /**
  * led 模式切换
 */
-uint16 change_light_mode (light_cmd_start_code mode, uint8_t sn, uint8 *res)
+uint16 change_light_mode (int mode, uint8_t sn, uint8 *res)
 {
+    uint16 resLen = 0;
     if (mode == light_data.mode)
     {
         // 模式相同, 不做处理
-        return -1;
+        return resLen;
     }
     light_data.mode = mode;
     if (mode == LIGHT_MODE_FULL)
@@ -237,7 +237,7 @@ uint16 change_light_mode (light_cmd_start_code mode, uint8_t sn, uint8 *res)
     }
     comLightVal();
     uint8_t data[1] = {mode};
-    uint16 resLen = 0;
+    
     if(res == NULL && notify_callback != NULL)
     {
         resLen = comCmdResCode(CMD_MODE, sn, data, 1, res);
@@ -260,48 +260,65 @@ uint16 change_light_mode (light_cmd_start_code mode, uint8_t sn, uint8 *res)
 */
 uint16 parse_light_code(uint8* data, uint16 len, uint8 *res)
 {
+    light_cmd_t light_cmd;
+    uint16 resLen = 0;
     // 判断是否为灯光指令 
     if (len < 4 || data[0] != START_CODE_CMD)
     {
         LOG("[parse_light_code] not light cmd \n");
-        return -1;
+        return resLen;
     }
-
-    light_cmd_t light_cmd;
-    uint16 resLen = 0;
+    // 假设 len 是数据的长度
     memcpy(&light_cmd, data, len);
+    LOG("[parse_light_code] cmd: %d, sn: %d, len: %d \n", light_cmd.cmd, light_cmd.sn, light_cmd.len);
+    // 为data分配内存
+    light_cmd.data = (uint8_t *)osal_mem_alloc(light_cmd.len - 2);
+    memcpy(light_cmd.data, data + 4, light_cmd.len - 2);
+    // 打印对应的hex数据体
+    LOG("[parse_light_code] data: ");
+    for (int i = 0; i < light_cmd.len - 2; i++)
+    {
+        LOG("%02x ", light_cmd.data[i]);
+    }
+    LOG("\n");
     // 现在你可以使用 light_cmd 结构体中的数据了
-    printf("Start Code: %d\n", light_cmd.startCode);
-    printf("Length: %d\n", light_cmd.len);
-    printf("Command Code: %d\n", light_cmd.cmd);
     // 如果需要访问数据部分，可以使用 light_cmd.data 指针
     switch (light_cmd.cmd)
     {
     case CMD_OPEN:
+        LOG("[parse_light_code] CMD_OPEN \n");
         resLen = open_light(light_cmd.sn, res);
         break;
     case CMD_CLOSE:
+        LOG("[parse_light_code] CMD_CLOSE \n");
          resLen = close_light(light_cmd.sn, res);
         break;
     case CMD_QUERY:
+        LOG("[parse_light_code] CMD_QUERY \n");
          resLen = query_light(light_cmd.sn, res);
         break;
     case CMD_LIGTH:
+        LOG("[parse_light_code] CMD_LIGTH %d\n", light_cmd.data[0]);
          resLen = light_set(light_cmd.data[0], light_cmd.sn, res);
         break;
     case CMD_TEMP:
+        LOG("[parse_light_code] CMD_TEMP %d\n", light_cmd.data[0] << 8 | light_cmd.data[1]);
          resLen = temp_set(light_cmd.data[0] << 8 | light_cmd.data[1], light_cmd.sn, res);
         break;
     case CMD_MODE:
+        LOG("[parse_light_code] CMD_MODE %d\n", light_cmd.data[0]);
          resLen = change_light_mode(light_cmd.data[0], light_cmd.sn, res);
         break;
     }
+    // 释放内存
+    osal_mem_free(light_cmd.data);
     return resLen;
 }
 
 // 注册通知回调函数,用于再某些情况下通知上位机
 void light_register_notify_callback(LightCallbackFunc callback)
 {
+    LOG("init light notify callback \n");
     notify_callback = callback;
 }
 

@@ -34,7 +34,7 @@ typedef struct {
 extern btn_all_pressed_t btn_all_pressed[];
 
 // 按钮状态
-extern int btn_init();
+extern void btn_init(uint8 taskId );
 
 
 uint16 Key_ProcessEvent( uint8 task_id, uint16 events );
