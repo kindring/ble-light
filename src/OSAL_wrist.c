@@ -31,6 +31,9 @@
 /* light */
 #include "light.h"
 
+/* adc */
+#include "adc.h"
+
 /* Application */
 #include "app_wrist.h"
 
@@ -53,6 +56,7 @@ const pTaskEventHandlerFn tasksArr[] =
   GATTServApp_ProcessEvent,
   Key_ProcessEvent,
   Light_ProcessEvent,
+  adc_ProcessEvent,
   appWristProcEvt
 };
 
@@ -108,6 +112,8 @@ void osalInitTasks( void )
   /** 初始化灯光*/
   light_init( taskID++ );
   LOG("light_init end\n");
+  /** 初始化adc*/
+  adc_Init( taskID++ );
   /* Application */
   appWristInit( taskID );
 }

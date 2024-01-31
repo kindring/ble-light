@@ -149,7 +149,7 @@ static uint8 wristProfileCharReadonlyUserDesp[14] = "CharReadonly\0";
 
 static gattAttribute_t wristProfileAttrTbl[SERVAPP_NUM_ATTR_SUPPORTED] = 
 {
-  // Wrist Profile Service
+  // Wrist Profile Service ok
   { 
     { ATT_BT_UUID_SIZE, primaryServiceUUID }, /* type */
     GATT_PERMIT_READ,                         /* permissions */
@@ -157,7 +157,7 @@ static gattAttribute_t wristProfileAttrTbl[SERVAPP_NUM_ATTR_SUPPORTED] =
     (uint8 *)&wristProfileService            /* pValue */
   },
 
-    // Command Characteristic Declaration
+    // Command Characteristic Declaration 
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
