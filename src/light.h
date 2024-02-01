@@ -38,6 +38,7 @@
 // 全亮模式下自动关闭时间 秒
 #define FULL_MODE_WAIT_TIME 60
 
+
 // 灯光控制命令起始码
 typedef enum {
     // 下发命令
@@ -70,6 +71,13 @@ typedef struct {
     int fan;
 } light_data_t;
 
+// 命令头长度
+#define CMD_HEADER_LEN 4
+// 命令除去起始码与长度的长度
+#define CMD_LEN_LEN 2
+// 命令最大长度,包含起始码,长度,命令码,sn码,数据
+#define CMD_MAX_LEN 128
+
 typedef struct {
     light_cmd_start_code startCode;
     uint8_t len;
@@ -77,6 +85,8 @@ typedef struct {
     uint8_t sn;
     uint8 *data;
 } light_cmd_t;
+
+
 
 extern light_data_t light_data;
 
@@ -98,7 +108,7 @@ extern uint16 temp_set(int temp, uint8_t sn, uint8 *res);
 extern uint16 open_light(uint8_t sn, uint8 *res);
 extern uint16 close_light(uint8_t sn, uint8 *res);
 extern uint16 change_light_mode (int mode, uint8_t sn, uint8 *res);
-extern uint16 parse_light_code(uint8* data, uint16 len, uint8 *res);
+extern uint16 parse_light_code(const uint8* data, uint16 len, uint8 *res);
 
 extern void light_register_notify_callback(LightCallbackFunc callback);
 

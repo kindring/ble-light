@@ -105,7 +105,6 @@ uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len, uint8_t *
     // 0x6c 0x06 0x01 0x64 
     // 判断是否有sn码,有则为响应,没有则为通知
     // 申请内存
-    res = (uint8_t *)osal_mem_alloc(len + 4);
     if(sn == 0)
     {
         res[0] = START_CODE_NOTIFY;
@@ -114,7 +113,7 @@ uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len, uint8_t *
         res[0] = START_CODE_RES;
     }
     // 数据长度
-    res[1] = len + 2;
+    res[1] = len + CMD_LEN_LEN;
     // 命令码
     res[2] = cmd;
     // sn码
@@ -122,24 +121,34 @@ uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len, uint8_t *
     // 数据可能为空
     if(len > 0){
         // 数据拷贝
-        memcpy(res + 4, data, len);
+        memcpy(res + CMD_HEADER_LEN, data, len);
     }
-    // 打印hex值
+    // 打印对应的hex数据体
+    LOG("[comCmdResCode] data: ");
+    for (int i = 0; i < len + CMD_HEADER_LEN; i++)
+    {
+        LOG("%02x ", res[i]);
+    }
+    LOG("\n");
     return len + 4;
 }
 
 
-// 灯光控制功能
+/**
+ * 开灯
+ */
 uint16 open_light(uint8_t sn , uint8 *res){
     light_data.open = true;
     comLightVal();
     uint16 resLen = 0;
     if(res == NULL && notify_callback != NULL)
     {
-        resLen = comCmdResCode(CMD_CLOSE, sn, NULL, 0, res);
+        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        resLen = comCmdResCode(CMD_OPEN, sn, NULL, 0, _res);
         notify_callback(res, resLen);
+        osal_mem_free(_res);
     }else{
-        resLen =  comCmdResCode(CMD_CLOSE, sn, NULL, 0, res);
+        resLen =  comCmdResCode(CMD_OPEN, sn, NULL, 0, res);
     }
     return resLen;
 }
@@ -151,8 +160,10 @@ uint16 close_light(uint8_t sn , uint8 *res){
     uint16 resLen = 0;
     if(res == NULL && notify_callback != NULL)
     {
-        resLen = comCmdResCode(CMD_CLOSE, sn, NULL, 0, res);
+        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        resLen = comCmdResCode(CMD_CLOSE, sn, NULL, 0, _res);
         notify_callback(res, resLen);
+        osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_CLOSE, sn, NULL, 0, res);
     }
@@ -183,11 +194,21 @@ uint16 light_set(uint8 val, uint8_t sn , uint8 *res){
     uint16 resLen = 0;
     if(res == NULL && notify_callback != NULL)
     {
-        resLen = comCmdResCode(CMD_LIGTH, sn, data, 1, res);
-        notify_callback(res, resLen);
+        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        resLen = comCmdResCode(CMD_LIGTH, sn, data, 1, _res);
+        notify_callback(_res, resLen);
+        osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_LIGTH, sn, data, 1, res);
     }
+    // 输出hex数据
+    LOG("[light_set] res: ");
+    for (int i = 0; i < resLen; i++)
+    {
+        LOG("%02x ", res[i]);
+    }
+    LOG("\n");
+    
     return resLen;
 }
 
@@ -207,8 +228,10 @@ uint16 temp_set(int temp, uint8_t sn , uint8 *res){
     uint16 resLen = 0;
     if(res == NULL && notify_callback != NULL)
     {
-        resLen = comCmdResCode(CMD_TEMP, sn, data, 2, res);
-        notify_callback(res,resLen);
+        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        resLen = comCmdResCode(CMD_TEMP, sn, data, 2, _res);
+        notify_callback(res, resLen);
+        osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_TEMP, sn, data, 2, res);
     }
@@ -240,8 +263,10 @@ uint16 change_light_mode (int mode, uint8_t sn, uint8 *res)
     
     if(res == NULL && notify_callback != NULL)
     {
-        resLen = comCmdResCode(CMD_MODE, sn, data, 1, res);
+        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        resLen = comCmdResCode(CMD_MODE, sn, data, 1, _res);
         notify_callback(res, resLen);
+        osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_MODE, sn, data, 1, res);
     }
@@ -258,7 +283,7 @@ uint16 change_light_mode (int mode, uint8_t sn, uint8 *res)
  * @param {uint16} len 数据长度
  * @param {uint8*} res 返回数据 
 */
-uint16 parse_light_code(uint8* data, uint16 len, uint8 *res)
+uint16 parse_light_code(const uint8* data, uint16 len, uint8 *res)
 {
     light_cmd_t light_cmd;
     uint16 resLen = 0;
@@ -310,6 +335,12 @@ uint16 parse_light_code(uint8* data, uint16 len, uint8 *res)
          resLen = change_light_mode(light_cmd.data[0], light_cmd.sn, res);
         break;
     }
+    LOG("[parse_light_code] res: ");
+    for (int i = 0; i < resLen; i++)
+    {
+        LOG("%02x ", res[i]);
+    }
+    LOG("\n");
     // 释放内存
     osal_mem_free(light_cmd.data);
     return resLen;
@@ -331,12 +362,9 @@ uint16 Light_ProcessEvent( uint8 task_id, uint16 events )
 	}
     if( events & LIGHT_EVT_DEFAULT_MODE){
         // 切换至默认模式
-        uint8 *res;
-        uint16 resLen = 0;
-        resLen = change_light_mode(LIGHT_MODE_DEFAULT, 0, res);
-        if(notify_callback != NULL){
-            notify_callback(res, resLen);
-        }
+        uint8 *res = osal_mem_alloc(CMD_MAX_LEN);
+        change_light_mode(LIGHT_MODE_DEFAULT, 0, res);
+        osal_mem_free(res);
         return (events ^ LIGHT_EVT_DEFAULT_MODE);
     }
 }

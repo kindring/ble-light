@@ -59,6 +59,7 @@
 #include "error.h"
 
 #include "wrist_service.h"
+#include "light.h"
 #include "app_wrist.h"
 /*********************************************************************
  * MACROS
@@ -374,7 +375,7 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
   LOG("RX Cmd:");
   print_hex(data, len);
   int i = 0;
-  uint8 *resData;
+  uint8 *resData = osal_mem_alloc(128);
   uint16 resLen;
   // 第一位为命令字 第二位为 值
   // cmdParse();
@@ -384,8 +385,14 @@ int on_recieved_cmd_packet(const uint8* data, uint16 len)
     LOG("parse_light_code error use set light %d\n", data[0]);
     resLen = light_set(data[0], 0, resData);
   }
-  print_hex(resData, resLen);
+  LOG("parse res data: ");
+  for (int i = 0; i < resLen; i++)
+  {
+      LOG("%02x ", resData[i]);
+  }
+  LOG("\n");
   cmd_response(resData, resLen);
+  osal_mem_free(resData);
   return ret;
 }
 
@@ -414,7 +421,7 @@ static int cmd_response(const uint8* data, uint16 len)
 {
   int i;
   attHandleValueNoti_t notif;
-  if (data == NULL || len < 1)
+  if (len < 1)
   {
     LOG("cmd_response: data is empty\n");
     return -1;
@@ -430,8 +437,14 @@ static int cmd_response(const uint8* data, uint16 len)
 
 void light_callback(uint8 *res, uint16 len){
   // log
-  LOG("light_callback[%d]: %s ", len, &res);
-  if(res == NULL || len < 1){
+  LOG("light_callback[%d]: ", len);
+ for (int i = 0; i < len; i++)
+  {
+      LOG("%02x ", res[i]);
+  }
+  LOG("\n");
+  
+  if(len < 1){
     LOG("data is empty len: %d\n", len);
     return;
   }

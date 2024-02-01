@@ -56,7 +56,7 @@ const pTaskEventHandlerFn tasksArr[] =
   GATTServApp_ProcessEvent,
   Key_ProcessEvent,
   Light_ProcessEvent,
-  adc_ProcessEvent,
+  // adc_ProcessEvent,
   appWristProcEvt
 };
 
@@ -113,7 +113,7 @@ void osalInitTasks( void )
   light_init( taskID++ );
   LOG("light_init end\n");
   /** 初始化adc*/
-  adc_Init( taskID++ );
+  // adc_Init( taskID++ );
   /* Application */
   appWristInit( taskID );
 }
