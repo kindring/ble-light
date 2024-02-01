@@ -311,9 +311,9 @@ void appWristInit( uint8 task_id)
     // light_init(-1);
     LOG("appWristInit end\n");
     // 初始化按键
-    temp_set(5500, 0, NULL);
+    // temp_set(5500, 0, NULL);
     LOG("temp_set end\n");
-    light_set(10, 0, NULL);
+    // light_set(10, 0, NULL);
     LOG("appWristInit end\n");
 }
 

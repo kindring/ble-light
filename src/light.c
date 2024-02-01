@@ -4,11 +4,12 @@
 
 #include "OSAL.h"
 #include "log.h"
+#include "error.h"
 
 #include "pwm_light.h"
 
 #include "light.h"
-
+#include "fs.h"
 uint8 task_light_id;
 
 uint32_t _light_total = TOTAl_LEVEL;
@@ -18,30 +19,7 @@ light_data_t light_data = {true, TEMP_MAX, 100, LIGHT_MODE_DEFAULT, 100};
 // 通知回调函数
 LightCallbackFunc notify_callback = NULL;
 
-void light_init(uint8 taskId){
-    LOG("[light_init]\n");
-    task_light_id = taskId;
-    // 初始化pwm
-    int ret = 0;
-    ret = pwm_light_init(WARM_CH, GPIO_WARM, _light_total, _light_total, 5, PWM_CLK_DIV_16);
-    ret = pwm_light_init(WARM_CH, GPIO_WARM2, _light_total, _light_total, 5, PWM_CLK_DIV_16);
-    if(ret != 0){
-        LOG("[light_init] pwm_light_init warm failed %d \n", ret);
-        return ;
-    }
 
-    ret = pwm_light_init(COLD_CH, GPIO_COLD, _light_total, _light_total, 5, PWM_CLK_DIV_16);
-    ret = pwm_light_init(COLD_CH, GPIO_COLD2, _light_total, _light_total, 5, PWM_CLK_DIV_16);
-    if(ret != 0){
-        LOG("[light_init] pwm_light_init cold failed  %d \n", ret);
-        return ;
-    }
-
-    // 拉低 warm2 与 cold2 的电平
-
-    // hal_gpio_pull_set(GPIO_WARM2, PULL_DOWN);
-    // hal_gpio_pull_set(GPIO_COLD2, PULL_DOWN);
-}
 
 int light_ch_set(uint8_t ch, uint16_t val){
     // LOG("[light_set] set ch%d val to %d \n", ch, val);
@@ -55,6 +33,19 @@ int light_ch_set(uint8_t ch, uint16_t val){
 // 计算 冷暖光的亮度值
 uint8_t comLightVal(){
     int light_val = light_data.light, temp_val = light_data.temp;
+    if(light_val > 100){
+        light_val = 100;
+    }
+    if(temp_val > TEMP_MAX){
+        temp_val = TEMP_MAX;
+    }
+    if(temp_val < TEMP_MIN){
+        temp_val = TEMP_MIN;
+    }
+    // 防止数据异常
+    light_data.light = light_val;
+    light_data.temp = temp_val;
+
     // 根据色温与亮度来计算冷暖灯光对应的亮度值
     // 亮度值范围 0~100 翻 100倍
     // 色温范围 2500~6500
@@ -81,8 +72,105 @@ uint8_t comLightVal(){
 
     light_ch_set(WARM_CH, warm_val);
     light_ch_set(COLD_CH, cold_val);
+
+
     return 0;
 }
+
+
+int save_file(uint16_t id,uint8_t* buf,uint16_t len){
+    uint32_t free_size;
+    int ret;
+    if(hal_fs_initialized() == FALSE){
+		ret = hal_fs_init(0x11005000,4);
+		if(PPlus_SUCCESS != ret)
+			LOG("error:%d\n",ret);
+	}
+    // 尝试移除文件
+    if(hal_fs_item_del(id) == PPlus_SUCCESS)
+    {
+        LOG("del file ok\n"); 
+        // 清理内存
+        // ret = hal_fs_garbage_collect();
+        if(PPlus_SUCCESS != ret)
+            LOG("error:%d\n",ret);
+    }
+    free_size = hal_fs_get_free_size();
+	LOG("free_size:%d\n",free_size);
+    if(len < free_size)
+    {
+        ret = hal_fs_item_write(id, buf, len);
+    }else{
+        LOG("free_size is not enough\n");
+        ret = PPlus_ERR_DATA_SIZE;
+    }
+
+    if(PPlus_SUCCESS != ret)
+        LOG("error:%d\n",ret);
+    else
+        LOG("write ok\n");
+    return ret;
+}
+int read_file(uint16_t id,uint8_t* buf,uint16_t len){
+    int ret;
+    uint16_t file_len;
+    ret = hal_fs_item_read(id, buf, len, &file_len);
+    if(PPlus_SUCCESS != ret)
+        LOG("error:%d\n",ret);
+    else
+        LOG("read ok file_len:%d\n", file_len);
+    return ret;
+}
+
+int save_light_data(){
+    LOG("Start save light data \n");
+    // 保存数据到文件中
+    uint8_t data[5];
+    data[0] = light_data.open;
+    data[1] = light_data.mode;
+    data[2] = light_data.light;
+    data[3] = light_data.temp >> 8;
+    data[4] = light_data.temp & 0xff;
+    LOG("[read_ligsave_light_dataht_data] data: ");
+        for (int i = 0; i < 5; i++)
+        {
+            LOG("%02x ", data[i]);
+        }
+        LOG("\n");
+    int ret = save_file(SAVE_FILE_ID, data, 5);
+    return ret;
+}
+
+int read_light_data(){
+    LOG("Start read light data read len:%d\n", sizeof(light_data_t));
+    // 从文件中读取数据
+    uint8_t data[5] = {0};
+    int ret = PPlus_SUCCESS;
+    if(hal_fs_initialized() == FALSE){
+		ret = hal_fs_init(0x11005000,4);
+		if(PPlus_SUCCESS != ret)
+			LOG("fs init error:%d\n",ret);
+	}
+    ret = read_file(SAVE_FILE_ID, data, 5);
+    if(ret == PPlus_SUCCESS){
+        // 输出hex数据
+        LOG("[read_light_data] data: ");
+        for (int i = 0; i < 5; i++)
+        {
+            LOG("%02x ", data[i]);
+        }
+        LOG("\n");
+        light_data.open = true;
+        light_data.mode = data[1];
+        light_data.light = data[2];
+        light_data.temp = data[3] << 8 | data[4];
+        
+        LOG("read light data success light:%d temp:%d\n", light_data.light, light_data.temp);
+        comLightVal();
+    }
+    return ret;
+}
+
 
 
 // [DEBUG] js code
@@ -130,6 +218,14 @@ uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len, uint8_t *
         LOG("%02x ", res[i]);
     }
     LOG("\n");
+
+    // 构建一个设置码,将light_data_t写入到文件中
+    
+    // 取消上一个定时器
+    osal_stop_timerEx( task_light_id, LIGHT_EVT_SAVE_DATA);
+    // 启动定时器, 准备保存数据
+    osal_start_timerEx( task_light_id, LIGHT_EVT_SAVE_DATA, SAVE_DATA_WAIT_TIME * 1000);
+    
     return len + 4;
 }
 
@@ -367,4 +463,39 @@ uint16 Light_ProcessEvent( uint8 task_id, uint16 events )
         osal_mem_free(res);
         return (events ^ LIGHT_EVT_DEFAULT_MODE);
     }
+    if( events & LIGHT_EVT_SAVE_DATA){
+        // 保存数据
+        save_light_data();
+        return (events ^ LIGHT_EVT_SAVE_DATA);
+    }
+}
+
+
+
+
+void light_init(uint8 taskId){
+    LOG("[light_init]\n");
+    task_light_id = taskId;
+    // 初始化pwm
+    int ret = 0;
+    ret = pwm_light_init(WARM_CH, GPIO_WARM, 0, _light_total, 5, PWM_CLK_DIV_16);
+    ret = pwm_light_init(WARM_CH, GPIO_WARM2, 0, _light_total, 5, PWM_CLK_DIV_16);
+    if(ret != 0){
+        LOG("[light_init] pwm_light_init warm failed %d \n", ret);
+        return ;
+    }
+
+    ret = pwm_light_init(COLD_CH, GPIO_COLD, 0, _light_total, 5, PWM_CLK_DIV_16);
+    ret = pwm_light_init(COLD_CH, GPIO_COLD2, 0, _light_total, 5, PWM_CLK_DIV_16);
+    if(ret != 0){
+        LOG("[light_init] pwm_light_init cold failed  %d \n", ret);
+        return ;
+    }
+
+    // 读取保存的数据
+    read_light_data();
+    // 拉低 warm2 与 cold2 的电平
+
+    // hal_gpio_pull_set(GPIO_WARM2, PULL_DOWN);
+    // hal_gpio_pull_set(GPIO_COLD2, PULL_DOWN);
 }

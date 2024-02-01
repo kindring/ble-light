@@ -4,6 +4,12 @@
 // 灯光事件
 #define LIGHT_EVT_DEFAULT_MODE 0x0008 // 恢复为默认模式事件
 
+// 保存灯光数据事件
+#define LIGHT_EVT_SAVE_DATA 0x0010
+
+// 保存数据等待时间 秒
+#define SAVE_DATA_WAIT_TIME 5
+
 // 暖光 pwm脚
 #define GPIO_WARM P18
 #define GPIO_WARM2 P15
@@ -39,6 +45,7 @@
 #define FULL_MODE_WAIT_TIME 60
 
 
+
 // 灯光控制命令起始码
 typedef enum {
     // 下发命令
@@ -65,11 +72,12 @@ typedef enum{
 // 灯光数据 色温, 亮度, 工作模式, 风扇
 typedef struct {
     bool open;
-    int temp;
+    uint16 temp;
     int light;
     int mode;
     int fan;
 } light_data_t;
+#define SAVE_FILE_ID 1
 
 // 命令头长度
 #define CMD_HEADER_LEN 4

@@ -70,6 +70,7 @@ static void key_press_evt(uint8_t i,key_evt_t key_evt)
 	{
 		case HAL_KEY_EVT_PRESS:
 			// LOG("key(press down)\n");	
+			osal_stop_timerEx(task_btn_id, BTN_EVT_TIME_CHECK);
 			osal_start_timerEx(task_btn_id, BTN_EVT_TIME_CHECK, HAL_KEY_LONG_PRESS_TIME + TIME_CHECK_TEMP);
 			changeLight(i);
 			
