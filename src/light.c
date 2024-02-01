@@ -91,7 +91,7 @@ int save_file(uint16_t id,uint8_t* buf,uint16_t len){
     {
         LOG("del file ok\n"); 
         // 清理内存
-        // ret = hal_fs_garbage_collect();
+        ret = hal_fs_garbage_collect();
         if(PPlus_SUCCESS != ret)
             LOG("error:%d\n",ret);
     }
