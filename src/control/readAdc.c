@@ -45,7 +45,7 @@
 #include "bcomdef.h"
 #include "adc.h"
 #include "OSAL.h"
-#include "adc_demo.h"
+#include "readAdc.h"
 #include "log.h"
 
 /*********************************************************************
@@ -88,10 +88,10 @@ then the pair of [P20~P15,P14~P13,P12~P11] will work.
 other adc channel cannot work.
 */
 adc_Cfg_t adc_cfg = {
-	.channel = ADC_BIT(ADC_CH3P_P20)|ADC_BIT(ADC_CH2P_P14)|ADC_BIT(ADC_CH3N_P15),
+	.channel = ADC_BIT(ADC_CH2P_P14),
 	.is_continue_mode = FALSE,
 	.is_differential_mode = 0x00,
-	.is_high_resolution = 0x7F,
+	.is_high_resolution = 0xFFF,
 };
 
 /*********************************************************************
@@ -202,6 +202,7 @@ static void adc_evt(adc_Evt_t* pev)
 
 static void adcMeasureTask( void )
 {
+	// 1. config adc channel
 	int ret;
 	bool batt_mode = FALSE;
 	uint8_t batt_ch = ADC_CH3P_P20;

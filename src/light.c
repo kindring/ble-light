@@ -14,7 +14,7 @@ uint8 task_light_id;
 
 uint32_t _light_total = TOTAl_LEVEL;
 // 配置 
-light_data_t light_data = {true, LIGHT_MODE_DEFAULT, TEMP_MAX, 100, , 100};
+light_data_t light_data = {true, LIGHT_MODE_DEFAULT, TEMP_MAX, 100, 100};
 
 // 通知回调函数
 LightCallbackFunc notify_callback = NULL;

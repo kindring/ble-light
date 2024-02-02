@@ -38,8 +38,8 @@
 
 **************************************************************************************************/
 
-#ifndef HEARTRATE_H
-#define HEARTRATE_H
+#ifndef READ_ADC_H
+#define READ_ADC_H
 
 #ifdef __cplusplus
 extern "C"
@@ -83,4 +83,4 @@ extern uint16 adc_ProcessEvent( uint8 task_id, uint16 events );
 }
 #endif
 
-#endif /* HEARTRATE_H */
+#endif /* READ_ADC_H */
