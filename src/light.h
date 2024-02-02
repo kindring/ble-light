@@ -72,10 +72,10 @@ typedef enum{
 // 灯光数据 色温, 亮度, 工作模式, 风扇
 typedef struct {
     bool open;
+    uint8 mode;
     uint16 temp;
-    int light;
-    int mode;
-    int fan;
+    uint8 light;
+    uint8 fan;
 } light_data_t;
 #define SAVE_FILE_ID 1
 
@@ -102,21 +102,24 @@ extern light_data_t light_data;
 typedef void (*LightCallbackFunc) (uint8 *res, uint16 len);
 
 
-extern void light_init(uint8 taskId);
 
-extern int light_ch_set(uint8_t ch, uint16_t val);
 
+void getLightData(uint8_t *data);
 // 计算冷暖光的亮度值,并且设置
 uint8_t comLightVal();
 
 uint16 comCmdResCode(uint8_t cmd, uint8_t sn, uint8* data, uint16 len,  uint8_t *res);
 
+
+extern void light_init(uint8 taskId);
+extern int light_ch_set(uint8_t ch, uint16_t val);
 extern uint16 light_set(uint8_t val, uint8 sn, uint8 *res);
 extern uint16 temp_set(int temp, uint8_t sn, uint8 *res);
 extern uint16 open_light(uint8_t sn, uint8 *res);
 extern uint16 close_light(uint8_t sn, uint8 *res);
 extern uint16 change_light_mode (int mode, uint8_t sn, uint8 *res);
 extern uint16 parse_light_code(const uint8* data, uint16 len, uint8 *res);
+
 
 extern void light_register_notify_callback(LightCallbackFunc callback);
 

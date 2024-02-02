@@ -14,7 +14,7 @@ uint8 task_light_id;
 
 uint32_t _light_total = TOTAl_LEVEL;
 // 配置 
-light_data_t light_data = {true, TEMP_MAX, 100, LIGHT_MODE_DEFAULT, 100};
+light_data_t light_data = {true, LIGHT_MODE_DEFAULT, TEMP_MAX, 100, , 100};
 
 // 通知回调函数
 LightCallbackFunc notify_callback = NULL;
@@ -122,15 +122,21 @@ int read_file(uint16_t id,uint8_t* buf,uint16_t len){
     return ret;
 }
 
-int save_light_data(){
-    LOG("Start save light data \n");
-    // 保存数据到文件中
-    uint8_t data[5];
+/**
+ * 获取灯光数据 长度5
+*/
+void getLightData(uint8_t *data){
     data[0] = light_data.open;
     data[1] = light_data.mode;
     data[2] = light_data.light;
     data[3] = light_data.temp >> 8;
     data[4] = light_data.temp & 0xff;
+}
+int save_light_data(){
+    LOG("Start save light data \n");
+    // 保存数据到文件中
+    uint8_t data[5];
+    getLightData(data);
     LOG("[read_ligsave_light_dataht_data] data: ");
         for (int i = 0; i < 5; i++)
         {
@@ -161,12 +167,15 @@ int read_light_data(){
         }
         LOG("\n");
         light_data.open = true;
-        light_data.mode = data[1];
+        light_data.mode = LIGHT_MODE_DEFAULT;
         light_data.light = data[2];
         light_data.temp = data[3] << 8 | data[4];
         
         LOG("read light data success light:%d temp:%d\n", light_data.light, light_data.temp);
         comLightVal();
+
+        // 启用对应的模式
+        change_light_mode(data[1], 0, NULL);
     }
     return ret;
 }
@@ -237,11 +246,13 @@ uint16 open_light(uint8_t sn , uint8 *res){
     light_data.open = true;
     comLightVal();
     uint16 resLen = 0;
-    if(res == NULL && notify_callback != NULL)
+    if(res == NULL)
     {
-        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        uint8 *_res = osal_mem_alloc(CMD_HEADER_LEN);
         resLen = comCmdResCode(CMD_OPEN, sn, NULL, 0, _res);
-        notify_callback(res, resLen);
+        if(notify_callback != NULL){
+            notify_callback(_res, resLen);
+        }
         osal_mem_free(_res);
     }else{
         resLen =  comCmdResCode(CMD_OPEN, sn, NULL, 0, res);
@@ -254,11 +265,13 @@ uint16 close_light(uint8_t sn , uint8 *res){
     light_data.open = false;
     comLightVal();
     uint16 resLen = 0;
-    if(res == NULL && notify_callback != NULL)
+    if(res == NULL)
     {
-        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        uint8 *_res = osal_mem_alloc(CMD_HEADER_LEN);
         resLen = comCmdResCode(CMD_CLOSE, sn, NULL, 0, _res);
-        notify_callback(res, resLen);
+        if(notify_callback != NULL){
+            notify_callback(_res, resLen);
+        }
         osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_CLOSE, sn, NULL, 0, res);
@@ -268,13 +281,10 @@ uint16 close_light(uint8_t sn , uint8 *res){
 
 // 灯光状态查询
 uint16 query_light(uint8_t sn , uint8 *res){
-    uint8_t data[4] = {
-        light_data.open, 
-        light_data.temp, 
-        light_data.light, 
-        light_data.mode
-    };
-    return comCmdResCode(CMD_QUERY, sn, data, 4, res);
+    uint8_t data[6];
+    getLightData(data);
+    data[5] = light_data.fan;
+    return comCmdResCode(CMD_QUERY, sn, data, 6, res);
 }
 
 // 亮度调节
@@ -288,11 +298,13 @@ uint16 light_set(uint8 val, uint8_t sn , uint8 *res){
     comLightVal();
     uint8 data[1] = {val};
     uint16 resLen = 0;
-    if(res == NULL && notify_callback != NULL)
+    if(res == NULL)
     {
-        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        uint8 *_res = osal_mem_alloc(CMD_HEADER_LEN + 1);
         resLen = comCmdResCode(CMD_LIGTH, sn, data, 1, _res);
-        notify_callback(_res, resLen);
+        if(notify_callback != NULL){
+            notify_callback(_res, resLen);
+        }
         osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_LIGTH, sn, data, 1, res);
@@ -322,11 +334,13 @@ uint16 temp_set(int temp, uint8_t sn , uint8 *res){
     // 如果res是空,则尝试调用通知回调函数
     uint8_t data[2] = {temp >> 8, temp & 0xff};
     uint16 resLen = 0;
-    if(res == NULL && notify_callback != NULL)
+    if(res == NULL)
     {
-        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        uint8 *_res = osal_mem_alloc(CMD_HEADER_LEN + 2);
         resLen = comCmdResCode(CMD_TEMP, sn, data, 2, _res);
-        notify_callback(res, resLen);
+        if(notify_callback != NULL){
+            notify_callback(_res, resLen);
+        }
         osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_TEMP, sn, data, 2, res);
@@ -357,11 +371,13 @@ uint16 change_light_mode (int mode, uint8_t sn, uint8 *res)
     comLightVal();
     uint8_t data[1] = {mode};
     
-    if(res == NULL && notify_callback != NULL)
+    if(res == NULL)
     {
-        uint8 *_res = osal_mem_alloc(CMD_MAX_LEN);
+        uint8 *_res = osal_mem_alloc(1 + CMD_HEADER_LEN);
         resLen = comCmdResCode(CMD_MODE, sn, data, 1, _res);
-        notify_callback(res, resLen);
+        if(notify_callback != NULL){
+            notify_callback(_res, resLen);
+        }
         osal_mem_free(_res);
     }else{
         resLen = comCmdResCode(CMD_MODE, sn, data, 1, res);
@@ -458,9 +474,7 @@ uint16 Light_ProcessEvent( uint8 task_id, uint16 events )
 	}
     if( events & LIGHT_EVT_DEFAULT_MODE){
         // 切换至默认模式
-        uint8 *res = osal_mem_alloc(CMD_MAX_LEN);
-        change_light_mode(LIGHT_MODE_DEFAULT, 0, res);
-        osal_mem_free(res);
+        change_light_mode(LIGHT_MODE_DEFAULT, 0, NULL);
         return (events ^ LIGHT_EVT_DEFAULT_MODE);
     }
     if( events & LIGHT_EVT_SAVE_DATA){
