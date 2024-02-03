@@ -9,11 +9,11 @@ const uint8_t max_pwm_light = 5;
 uint8_t pwm_light_len = 0;
 // 申请5个通道的内存
 pwm_t pwm_light_chann_list[max_pwm_light] = {
-    {PWM_CH0, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16},
-    {PWM_CH1, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16},
-    {PWM_CH2, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16},
-    {PWM_CH3, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16},
-    {PWM_CH5, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16},
+    {PWM_CH0, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16, GPIO_DUMMY},
+    {PWM_CH1, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16, GPIO_DUMMY},
+    {PWM_CH2, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16, GPIO_DUMMY},
+    {PWM_CH3, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16, GPIO_DUMMY},
+    {PWM_CH5, GPIO_DUMMY, 0, 100, 5, PWM_CLK_DIV_16, GPIO_DUMMY},
 };
 
 // 刷新指定 pwm 引脚
@@ -29,17 +29,15 @@ int pwm_light_reflash(int i)
     
     hal_pwm_close_channel(pwm->pwm_ch);
     hal_pwm_destroy(pwm->pwm_ch);
-
+    
     hal_pwm_stop();
 
     hal_gpio_pin_init(pwm->pin, IE);
     hal_gpio_pull_set(pwm->pin, WEAK_PULL_UP);
-
     hal_pwm_init(pwm->pwm_ch, pwm->div, PWM_CNT_UP, PWM_POLARITY_FALLING);
-
     hal_pwm_set_count_val(pwm->pwm_ch, pwm->val, pwm->total);
-
     hal_pwm_open_channel(pwm->pwm_ch, pwm->pin);
+    
     hal_pwm_start();
     return 0;
 }
@@ -187,5 +185,54 @@ int pwm_light_set_div(uint8_t ch, PWM_CLK_DIV_e div)
     // 刷新 pwm 引脚
     pwm_light_reflash(ch);
 
+    return 0;
+}
+
+
+int pwm_close(uint8_t ch)
+{
+    LOG("pwm_close %d\n", ch);
+    pwm_t *pwm;
+    // 判断 ch 是否合法
+    CHECK_PWM_CH
+    
+    // 获取 pwm
+    pwm = &pwm_light_chann_list[ch];
+
+    hal_pwm_close_channel(pwm->pwm_ch);
+    hal_pwm_destroy(pwm->pwm_ch);
+    hal_gpio_pin_init(pwm->pin, OEN);
+    hal_gpio_pull_set(pwm->pin, PULL_DOWN);
+
+    // 关闭 pwm
+    pwm->pin = GPIO_DUMMY;
+
+    pwm_reflash_all();
+    return 0;
+}
+
+
+int pwm_open(uint8_t ch , GPIO_Pin_e pin)
+{
+    LOG("pwm_open %d\n", ch);
+    pwm_t *pwm;
+    // 判断 ch 是否合法
+    CHECK_PWM_CH
+
+    // 获取 pwm
+    pwm = &pwm_light_chann_list[ch];
+    if (pin == GPIO_DUMMY)
+    {
+        LOG("pwm ReOpen error %d\n", ch);
+        return -1;
+    }
+    if (pwm->pin == pin)
+    {
+        LOG("pwm open error %d is started\n", ch);
+        return -2;
+    }
+    
+    pwm->pin = pin;
+    pwm_light_reflash(ch);
     return 0;
 }

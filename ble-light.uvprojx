@@ -492,6 +492,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\control\btn.c</FilePath>
             </File>
+            <File>
+              <FileName>readAdc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\control\readAdc.c</FilePath>
+            </File>
             
           </Files>
         </Group>

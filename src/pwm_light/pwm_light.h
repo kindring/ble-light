@@ -18,6 +18,7 @@ typedef struct pwm_t {
     uint32_t total;// 总量 0-100
     uint32_t step;// 步长 5
     PWM_CLK_DIV_e div;// pwm时钟分频
+    GPIO_Pin_e old_pin;// 旧引脚
 } pwm_t;
 
 // pwm结构体数组 不定长 最大5个
@@ -77,5 +78,6 @@ extern int pwm_light_set_val(uint8_t ch , uint32_t val);
 */
 extern int pwm_light_set_div(uint8_t ch , PWM_CLK_DIV_e div);
 
-
+extern int pwm_open(uint8_t ch, GPIO_Pin_e pin);
+extern int pwm_close(uint8_t ch);
 #endif

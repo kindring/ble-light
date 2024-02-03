@@ -164,13 +164,13 @@ static void adc_evt(adc_Evt_t* pev)
 {
 	float value = 0;
 	int i = 0;
-	bool is_high_resolution = FALSE;
+	bool is_high_resolution = TRUE;
 	bool is_differential_mode = FALSE;
 		
 	if((pev->type != HAL_ADC_EVT_DATA) || (pev->ch < 2))
 		return;
 		
-	osal_memcpy(adc_debug[pev->ch-2],pev->data,2*(pev->size));
+	osal_memcpy(adc_debug[pev->ch-2], pev->data, 2*(pev->size));
 	channel_done_flag |= BIT(pev->ch);		
 		
 	if(channel_done_flag == adc_cfg.channel)
@@ -179,9 +179,10 @@ static void adc_evt(adc_Evt_t* pev)
 		{
 			if(channel_done_flag & BIT(i))
 			{
-				is_high_resolution = (adc_cfg.is_high_resolution & BIT(i))?TRUE:FALSE;
-				is_differential_mode = (adc_cfg.is_differential_mode & BIT(i))?TRUE:FALSE;
-				value = hal_adc_value_cal((adc_CH_t)i,adc_debug[i-2], pev->size, is_high_resolution,is_differential_mode);
+				// is_high_resolution = (adc_cfg.is_high_resolution & BIT(i))?TRUE:FALSE;
+				// is_differential_mode = (adc_cfg.is_differential_mode & BIT(i))?TRUE:FALSE;
+				LOG("PEV: %d %d %d\n", i, pev->size, pev->data[0]);
+				value = hal_adc_value_cal((adc_CH_t)i, adc_debug[i-2], pev->size, FALSE, is_differential_mode);
 				
 				if(i<7)
 					LOG("P%d %d mv ",(i+9),(int)(value*1000));
@@ -204,8 +205,8 @@ static void adcMeasureTask( void )
 {
 	// 1. config adc channel
 	int ret;
-	bool batt_mode = FALSE;
-	uint8_t batt_ch = ADC_CH3P_P20;
+	bool batt_mode = TRUE;
+	uint8_t batt_ch = ADC_CH2P_P14;
 	GPIO_Pin_e pin;
 	
 	if(FALSE == batt_mode)
@@ -216,13 +217,17 @@ static void adcMeasureTask( void )
 	{
 		if((((1 << batt_ch) & adc_cfg.channel) == 0) || (adc_cfg.is_differential_mode != 0x00))			
 			return;
-
-		pin = s_pinmap[batt_ch];		
-		hal_gpio_cfg_analog_io(pin,Bit_DISABLE);
+		LOG("batt_mode\n");
+		// 拉高 p34 脚的电压, 配置为输出
+		hal_gpio_pull_set(P34, STRONG_PULL_UP);
+		
+		pin = s_pinmap[batt_ch];	
+		hal_gpio_cfg_analog_io(pin, Bit_DISABLE);
 		hal_gpio_write(pin, 1);		
 
 		ret = hal_adc_config_channel(adc_cfg, adc_evt);
-		hal_gpio_cfg_analog_io(pin,Bit_DISABLE);	
+		hal_gpio_cfg_analog_io(pin, Bit_DISABLE);	
+
 	}	
 	
 	//LOG("REG_IO_CONTROL:%x\n",*REG_IO_CONTROL);

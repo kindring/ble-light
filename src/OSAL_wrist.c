@@ -32,7 +32,7 @@
 #include "light.h"
 
 /* adc */
-#include "adc.h"
+#include "readAdc.h"
 
 /* Application */
 #include "app_wrist.h"

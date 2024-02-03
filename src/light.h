@@ -8,32 +8,48 @@
 #define LIGHT_EVT_SAVE_DATA 0x0010
 
 // 保存数据等待时间 秒
-#define SAVE_DATA_WAIT_TIME 5
+#define SAVE_DATA_WAIT_TIME 3
 
 // 暖光 pwm脚
 #define GPIO_WARM P18
 #define GPIO_WARM2 P15
 #define WARM_CH 0
+// 暖光最小亮度值
+#define WARM_LIGHT_MIN 5
 // 冷光 pwm脚
 #define GPIO_COLD P20
 #define GPIO_COLD2 P31
 #define COLD_CH 1
+// 冷光最小亮度值
+#define COLD_LIGHT_MIN 5
 
 // 风扇 pwm
-#define GPIO_FAN P23
+#define GPIO_FAN P3
+#define FAN_CH 2
+// 风扇启用亮度值 (灯光亮度大于该值时启用风扇)
+#define FAN_LIGHT_MIN 30
 
 // 亮度分级 0~100 翻 100倍
 #define TOTAl_LEVEL 100
 // 亮度更改步长
 #define LIGHT_STEP 5
+// 亮度最低值
+#define LIGHT_MIN 8
+
 #define TEMP_MIN 2700
 #define TEMP_MAX 6500
+// 色温便宜值
+#define TEMP_OFFSET 500
 // 色温更改步长
 #define TEMP_STEP 50
 
 
+
 // adc 电源监测脚
-#define GPIO_POWER P28
+#define GPIO_POWER P14
+// 电压检测控制脚
+#define GPIO_BATT_CH P34
+// adc 电源监测通道
 
 // 工作模式
 // 默认工作模式

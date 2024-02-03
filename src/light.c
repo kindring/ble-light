@@ -27,12 +27,15 @@ int light_ch_set(uint8_t ch, uint16_t val){
     return ret;
 }
 
-
-
-
-// 计算 冷暖光的亮度值
+/**
+ * 计算并调节冷暖光以及风扇的pwm通道值
+ * 
+*/
 uint8_t comLightVal(){
     int light_val = light_data.light, temp_val = light_data.temp;
+    uint8 fan_speed = light_data.fan;
+    // 设备是否关闭
+    bool isClose = !light_data.open;
     if(light_val > 100){
         light_val = 100;
     }
@@ -55,25 +58,69 @@ uint8_t comLightVal(){
     int tmp_cold_val = _light_total - tmp_warm_val;
     int warm_val = light_val * tmp_warm_val / 100;
     int cold_val = light_val * tmp_cold_val / 100;
+    // 如果色温偏冷, 且亮度小于特定值,则需要将暖色温进行一定补偿, 防止暖色温灯光过暗, 造成色温偏冷
+    if(temp_val < TEMP_MIN + TEMP_OFFSET 
+    && warm_val < WARM_LIGHT_MIN 
+    && temp_val != TEMP_MIN
+    && light_val >= LIGHT_MIN){
+        warm_val = WARM_LIGHT_MIN + 1;
+    }
+    // 如果色温偏暖, 且亮度小于特定值,则需要将冷色温进行一定补偿, 防止冷色温灯光过暗, 造成色温偏暖
+    if(temp_val > TEMP_MAX - TEMP_OFFSET 
+    && cold_val < COLD_LIGHT_MIN 
+    && temp_val != TEMP_MIN
+    && light_val >= LIGHT_MIN){
+        cold_val = COLD_LIGHT_MIN + 1;
+    }
+    
+    
     LOG("[comLightVal] light: %d temp: %d warm_val %d, cold_val %d \n", light_val, temp_val, warm_val, cold_val);
     
     if(light_data.mode == LIGHT_MODE_FULL){
         // 全亮模式
         warm_val = light_val * _light_total / 100;
         cold_val = light_val * _light_total / 100;
+        fan_speed = 100;
     }
 
 
+
+    // 冷暖灯光小于最低值直接关闭灯光通道
+    if(warm_val < WARM_LIGHT_MIN && cold_val < COLD_LIGHT_MIN){
+        isClose = true;
+    }
+
+    
     if(!light_data.open){
         // 设备已经关闭, 设置为 0
+        isClose = true;
+    }
+
+
+    if (isClose)
+    {
+        // 关闭灯光
         warm_val = 0;
         cold_val = 0;
+        fan_speed = 0;
     }
+
 
     light_ch_set(WARM_CH, warm_val);
     light_ch_set(COLD_CH, cold_val);
 
+   
 
+    // 设置风扇
+    if (fan_speed > 0)
+    {   
+        pwm_open(FAN_CH, GPIO_FAN);
+        light_ch_set(FAN_CH, fan_speed);
+    }else{
+        // 关闭风扇
+        pwm_close(FAN_CH);
+    }
+    
     return 0;
 }
 
@@ -294,7 +341,26 @@ uint16 light_set(uint8 val, uint8_t sn , uint8 *res){
     if(val > 100){
         val = 100;
     }
+    
+    // 只在亮度减少时进行检测
+    if (val < light_data.light && val < LIGHT_MIN)
+    {
+        LOG("[light_set] val is too small, set to 0\n");
+        val = 0;
+    }
+
     light_data.light = val;
+    // 亮度大于特定值时, 直接将风扇速度与灯同步
+    if(val > FAN_LIGHT_MIN)
+    {
+        light_data.fan = val;
+    } else 
+    {
+        // 亮度小于特定值时, 风扇速度为 30
+        light_data.fan = 0;
+    }
+
+
     comLightVal();
     uint8 data[1] = {val};
     uint16 resLen = 0;
@@ -345,6 +411,39 @@ uint16 temp_set(int temp, uint8_t sn , uint8 *res){
     }else{
         resLen = comCmdResCode(CMD_TEMP, sn, data, 2, res);
     }
+    return resLen;
+}
+
+/**
+ * 风扇速度调节
+*/
+uint16 FAN_SET(uint8 fanSpeed, uint8_t sn , uint8 *res){
+    if(fanSpeed > 100){
+        fanSpeed = 100;
+    }
+    light_data.fan = fanSpeed;
+    comLightVal();
+    uint8 data[1] = {fanSpeed};
+    uint16 resLen = 0;
+    if(res == NULL)
+    {
+        uint8 *_res = osal_mem_alloc(CMD_HEADER_LEN + 1);
+        resLen = comCmdResCode(CMD_FAN, sn, data, 1, _res);
+        if(notify_callback != NULL){
+            notify_callback(_res, resLen);
+        }
+        osal_mem_free(_res);
+    }else{
+        resLen = comCmdResCode(CMD_FAN, sn, data, 1, res);
+    }
+    // 输出hex数据
+    LOG("[FAN_SET] res: ");
+    for (int i = 0; i < resLen; i++)
+    {
+        LOG("%02x ", res[i]);
+    }
+    LOG("\n");
+    
     return resLen;
 }
 
@@ -506,10 +605,22 @@ void light_init(uint8 taskId){
         return ;
     }
 
+
+    ret = pwm_light_init(FAN_CH, GPIO_FAN, 0,  100, 5, PWM_CLK_DIV_128);
+    if(ret != 0){
+        LOG("[light_init] pwm_FAN_init FAN failed  %d \n", ret);
+        return ;
+    }
+
+
+
     // 读取保存的数据
     read_light_data();
     // 拉低 warm2 与 cold2 的电平
 
+
+    // 拉高 p34 脚的电压, 配置为输出
+	hal_gpio_pull_set(GPIO_BATT_CH, STRONG_PULL_UP);
     // hal_gpio_pull_set(GPIO_WARM2, PULL_DOWN);
     // hal_gpio_pull_set(GPIO_COLD2, PULL_DOWN);
 }

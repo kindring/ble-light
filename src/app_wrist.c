@@ -18,6 +18,9 @@
 #include "log.h"
 #include "ll.h"
 
+#include "adc.h"
+
+
 #include "light.h"
 #include "app_wrist.h"
 #include "wrist_service.h"
@@ -235,6 +238,82 @@ static void getPinState(){
 	LOG("---------------------------------\n");
 }
 
+void test_adc_evt(adc_Evt_t* pev){
+    int i = 0;
+    LOG("test_adc_evt\n");
+    if(pev->type == HAL_ADC_EVT_DATA){
+        LOG("HAL_ADC_EVT_DATA\n");
+    }
+    // typedef struct _adc_Evt_t{
+    //     int       type;
+    //     adc_CH_t  ch;
+    //     uint16_t* data;
+    //     uint8_t   size; //word size
+    // }adc_Evt_t;
+    LOG("adc event type:%d ch:%d\n", pev->type, pev->ch);
+    // 输出adc数据
+    LOG("[adc data] size:%d value: ", pev->size);
+    for(i = 0; i < pev->size; i++){
+        LOG("%02x", pev->data[i]);
+    }
+    LOG("\n");
+    uint16 adc_buf[6][64];
+    osal_memcpy(adc_buf[pev->ch-2], pev->data, 2*(pev->size));
+
+
+    // 输出adcbuf数据
+    for(i = 0; i < 6; i++){
+        LOG("adc_buf[%d]: ", i);
+        for(int j = 0; j < 64; j++){
+            LOG("%02x", adc_buf[i][j]);
+        }
+        LOG("\n");
+    }
+
+    float value = 0;
+    static uint8_t channel_done_flag = 0;
+    channel_done_flag |= BIT(pev->ch);
+    for(i=2;i<8;i++)
+    {
+        if(channel_done_flag & BIT(i))
+		{
+        // is_high_resolution = (adc_cfg.is_high_resolution & BIT(i))?TRUE:FALSE;
+            // is_differential_mode = (adc_cfg.is_differential_mode & BIT(i))?TRUE:FALSE;
+            LOG("PEV: %d %d %d\n", i, pev->size, pev->data[0]);
+            value = hal_adc_value_cal((adc_CH_t)i, adc_buf[i-2], pev->size, TRUE, FALSE);
+            // 最终电压值 
+            if(i<7)
+            {
+                LOG("P%d %d mv val: %d mv V: %d",(i+9),(int)(value*1000), (int)(value * 1000 * 4), (int)(value*1000) * 4 * 12);
+                // 输出电压值 V 12倍 浮点数
+                LOG("[BATT]: %dmV", (int)(value*1000) * 4 * 13);
+            } else
+            {
+                LOG("P%d %d mv ",(20),(int)(value*1000));
+            }
+        }
+    }	
+    // getPinState();
+}
+void test_adc_read(){
+   LOG("[test_adc_read] read Read Adc");
+   hal_adc_init();
+    GPIO_Pin_e controlPin = P34;
+   GPIO_Pin_e adcPin = P14;
+   adc_Cfg_t adc_cfg = {
+        .channel = ADC_BIT(ADC_CH2P_P14),
+        .is_continue_mode = FALSE,
+        .is_differential_mode = FALSE,
+        .is_high_resolution = TRUE,
+    };
+   
+    // 注册adc
+    hal_adc_config_channel(adc_cfg, test_adc_evt);
+    LOG("hal_adc_config_channel end\n");
+    hal_adc_start();
+}
+
+
 void appWristInit( uint8 task_id)
 {
     AppWrist_TaskID = task_id;
@@ -315,6 +394,9 @@ void appWristInit( uint8 task_id)
     LOG("temp_set end\n");
     // light_set(10, 0, NULL);
     LOG("appWristInit end\n");
+    // test_adc_read();
+    // 注册定时器. 持续读取数据
+    // osal_start_reload_timer( AppWrist_TaskID, TIMER_LIGHT_EVT, 2000);
 }
 
 // 事件处理器
@@ -351,7 +433,6 @@ uint16 appWristProcEvt( uint8 task_id, uint16 events )
     if ( events & TIMER_LIGHT_EVT )
     {
         LOG("TIMER_LIGHT_EVT\n");
-        getPinState();
         return ( events ^ TIMER_LIGHT_EVT );
     }
      return 0;

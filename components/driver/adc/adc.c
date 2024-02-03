@@ -523,7 +523,7 @@ static void hal_adc_load_calibration_value(void)
 float hal_adc_value_cal(adc_CH_t ch,uint16_t* buf, uint32_t size, uint8_t high_resol, uint8_t diff_mode)
 {
     uint32_t i;
-		int adc_sum = 0;
+	int adc_sum = 0;
     float result = 0.0;
 	
     for (i = 0; i < size; i++) {
@@ -532,13 +532,13 @@ float hal_adc_value_cal(adc_CH_t ch,uint16_t* buf, uint32_t size, uint8_t high_r
   
     hal_adc_load_calibration_value();  
     result = ((float)adc_sum)/size;
-  
-    if((adc_cal_postive!=0xfff)&&(adc_cal_negtive!=0xfff)){
-        float delta = ((int)(adc_cal_postive-adc_cal_negtive))/2.0;
+	
+    if((adc_cal_postive!=0xfff) && (adc_cal_negtive!=0xfff)){
+        float delta = ((int)(adc_cal_postive - adc_cal_negtive))/2.0;
         if(ch&0x01)
         {
-            result = (diff_mode) ? ((result-2048-delta)*2/(adc_cal_postive+adc_cal_negtive)) 
-            : ((result+delta) /(adc_cal_postive+adc_cal_negtive));
+            result = (diff_mode) ? ((result - 2048 - delta) * 2 / (adc_cal_postive + adc_cal_negtive)) 
+            : ((result + delta) / (adc_cal_postive + adc_cal_negtive));
         }
         else
         {
